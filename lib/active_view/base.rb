@@ -8,6 +8,7 @@ module ActiveView
     include ActiveModel::AttributeMethods
     include ActiveModel::Validations
 
+
     include Rendering
 
     class << self
@@ -20,12 +21,23 @@ module ActiveView
         @abstract = true
       end
 
+      attr_reader :presenter
+
+      def presenter=(new_presenter)
+        @presenter = new_presenter
+      end
+
       def inherited(klass) # :nodoc:
         # Define the abstract ivar on subclasses so that we don't get
         # uninitialized ivar warnings
         unless klass.instance_variable_defined?(:@abstract)
           klass.instance_variable_set(:@abstract, false)
         end
+
+        unless klass.instance_variable_defined?(:@presenter)
+          klass.instance_variable_set(:@presenter, "#{klass.view_path}_presenter".camelize.constantize)
+        end
+
         super
       end
 
@@ -38,6 +50,11 @@ module ActiveView
       def view_path
         @view_path ||= anonymous? ? superclass.view_path : name.sub(/View$/, '').underscore
       end
+
+      def attribute(*names)
+        delegate *names, to: :object
+        names.each { |name| delegate :"#{name}=", to: :object }
+      end
     end
 
     # Delegates to the class' #view_path
@@ -45,25 +62,39 @@ module ActiveView
       self.class.view_path
     end
 
+    def presenter
+      @presenter ||= self.class.presenter.new(self, block)
+    end
+
     abstract!
 
     attr_internal :object
     delegate :attributes, to: :object
 
-    attr_internal :presenter
     delegate :process, to: :presenter
 
-    def initialize(assigns = {}, controller = nil, object = nil)
+    attr_internal :block
+
+    def initialize(assigns = {}, controller = nil, object = {}, &block)
       @_config = ActiveSupport::InheritableOptions.new
 
       assign(assigns)
       assign_controller(controller)
       _prepare_context
-      @_object = object
+      @_object = object.is_a?(Hash) ? AttributeWrapper.new(object) : object
+      @_block = block if block_given?
+      presenter.process(:show)
     end
 
-    delegate :to_model, to: :object
-    delegate :model_name, to: :to_model
+    def to_model
+      object.respond_to?(:to_model) ? object.to_model : self
+    end
+
+    def model_class
+      model_name_from_record_or_class(self).name.constantize
+    end
+
+    AttributeWrapper = Struct.new(:attributes)
 
     ActiveSupport.run_load_hooks(:active_view, self)
   end

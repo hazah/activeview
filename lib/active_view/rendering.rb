@@ -7,24 +7,26 @@ module ActiveView
 
     module ClassMethods
       def view_context_class(controller)
-        @view_context_class ||= begin
-          supports_path = controller.supports_path?
-          routes  = controller.respond_to?(:_routes)  && controller._routes
-          helpers = controller.respond_to?(:_helpers) && controller._helpers
+        supports_path = controller.supports_path?
+        routes  = controller.respond_to?(:_routes)  && controller._routes
+        helpers = controller.respond_to?(:_helpers) && controller._helpers
 
-          base = self
+        base = self
 
-          Class.new(base) do
-            if routes
-              include routes.url_helpers(supports_path)
-              include routes.mounted_helpers
-            end
+        Class.new(base) do
+          if routes
+            include routes.url_helpers(supports_path)
+            include routes.mounted_helpers
+          end
 
-            if helpers
-              include helpers
-            end
+          if helpers
+            include helpers
+          end
 
-            self._view_paths = base._view_paths
+          self._view_paths = base._view_paths
+
+          define_singleton_method :name do
+            base.name
           end
         end
       end
@@ -44,24 +46,22 @@ module ActiveView
       @_view_renderer ||= ActionView::Renderer.new(lookup_context)
     end
 
-    def render(options = {}, object = nil, locals = {}, &block)
-      if object.is_a?(Hash) && locals.empty?
-        locals, object = object, nil
-      end
-
+    # Overrides the main helper so that global templates can make use of the
+    # controllers lookup_context if one is available and fallback to own if not.
+    def render(options = {}, locals = {}, &block)
       case options
       when Hash
         if view = options.delete(:view)
-          view_renderer.render_view(self, view, controller, object, options, &block)
+          view_renderer.render_view(self, view, controller, locals, options, &block)
         else
           if block_given?
-            controller.view_renderer.render_partial(self, options.merge(:partial => options[:layout]), &block)
+            (try(:controller) || self).view_renderer.render_partial(self, options.merge(:partial => options[:layout]), &block)
           else
-            controller.view_renderer.render(self, options)
+            (try(:controller) || self).view_renderer.render(self, options)
           end
         end
       else
-        controller.view_renderer.render_partial(self, :partial => options, :locals => locals)
+        (try(:controller) || self).view_renderer.render_partial(self, :partial => options, :locals => locals)
       end
     end
   end

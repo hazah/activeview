@@ -1,11 +1,13 @@
 class Post::ShowView < ActiveView::Base
-  delegate :title, :body, to: :object
+  attribute :title, :body
+
+  validates_presence_of :title
 
   def edit_link
     link_to 'Edit', self
   end
 
   def back_link
-    link_to 'Back', model_name.name.constantize
+    link_to 'Back', model_class
   end
 end

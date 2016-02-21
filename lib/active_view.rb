@@ -21,5 +21,9 @@ module ActiveView
     autoload_under "renderer" do
       autoload :ViewRenderer
     end
+
+    autoload_under "presenter" do
+      autoload :Presenter
+    end
   end
 end
