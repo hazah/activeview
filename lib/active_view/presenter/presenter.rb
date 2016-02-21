@@ -18,7 +18,6 @@ module ActiveView
     attr_internal :model
     delegate :session, :params, :options, to: :model
     delegate :assign, to: :model
-    delegate :capture, to: :model
 
     attr_internal :block
 
@@ -33,7 +32,7 @@ module ActiveView
     private
 
     def run_block
-      @block_content ||= capture(model, &block) unless block.blank?
+      @block_content = model.parent.capture(model, &block) unless block.blank?
     end
 
     def set_assigns

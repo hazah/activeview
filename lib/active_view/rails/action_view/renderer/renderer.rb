@@ -9,7 +9,7 @@ module ActiveView
 
         def render_view(context, view_base, controller, object, &block)
           view_class = view_base.view_context_class(controller.class)
-          view = view_class.new(controller, object, &block)
+          view = view_class.new(context, controller, object, &block)
 
           ViewRenderer.new(view.lookup_context).render(view, view.options) if view.renderable?
         end

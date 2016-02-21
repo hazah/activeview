@@ -68,6 +68,8 @@ module ActiveView
 
     abstract!
 
+    attr_internal :parent
+
     attr_internal :object
     delegate :attributes, to: :object
 
@@ -76,11 +78,13 @@ module ActiveView
     attr_internal :block
     attr_internal :options
 
-    def initialize(controller = nil, object = {}, &block)
+    def initialize(parent, controller = nil, object = {}, &block)
       @_config = ActiveSupport::InheritableOptions.new
 
       assign_controller(controller)
       _prepare_context
+
+      @_parent = parent
       @_object = object.is_a?(Hash) ? AttributeWrapper.new(object) : object
       @_block = block if block_given?
       @_options = {}
