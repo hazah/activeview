@@ -1,4 +1,4 @@
-class Post::ShowView < ActiveView::Base
+class Post::Show < ActiveView::Base
   attribute :title, :body
 
   validates_presence_of :title

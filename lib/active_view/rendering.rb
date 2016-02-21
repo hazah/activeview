@@ -51,17 +51,17 @@ module ActiveView
     def render(options = {}, locals = {}, &block)
       case options
       when Hash
-        if view = options.delete(:view)
-          view_renderer.render_view(self, view, controller, locals, options, &block)
+        if block_given?
+          (try(:controller) || self).view_renderer.render_partial(self, options.merge(:partial => options[:layout]), &block)
         else
-          if block_given?
-            (try(:controller) || self).view_renderer.render_partial(self, options.merge(:partial => options[:layout]), &block)
-          else
-            (try(:controller) || self).view_renderer.render(self, options)
-          end
+          (try(:controller) || self).view_renderer.render(self, options)
         end
       else
-        (try(:controller) || self).view_renderer.render_partial(self, :partial => options, :locals => locals)
+        if options < ActiveView::Base
+          view_renderer.render_view(self, options, controller, locals, &block)
+        else
+          (try(:controller) || self).view_renderer.render_partial(self, :partial => options, :locals => locals)
+        end
       end
     end
   end

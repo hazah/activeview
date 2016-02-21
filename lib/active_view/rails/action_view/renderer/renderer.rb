@@ -7,13 +7,11 @@ module ActiveView
       module Renderer
         extend ActiveSupport::Concern
 
-        def render_view(context, view, controller, object, options, &block)
-          assigns = {}
+        def render_view(context, view_base, controller, object, &block)
+          view_class = view_base.view_context_class(controller.class)
+          view = view_class.new(controller, object, &block)
 
-          view_class = "#{view.to_s}_view".camelize.constantize.view_context_class(controller.class)
-          view = view_class.new(assigns, controller, object, &block)
-
-          ViewRenderer.new(view.lookup_context).render(view, options) if view.valid?
+          ViewRenderer.new(view.lookup_context).render(view, view.options) if view.renderable?
         end
       end
     end

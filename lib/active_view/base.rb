@@ -35,20 +35,20 @@ module ActiveView
         end
 
         unless klass.instance_variable_defined?(:@presenter)
-          klass.instance_variable_set(:@presenter, "#{klass.view_path}_presenter".camelize.constantize)
+          klass.instance_variable_set(:@presenter, "#{klass.view_path}/presenter".camelize.constantize)
         end
 
         super
       end
 
       # Returns the full view name, underscored, without the ending View.
-      # For instance, MyApp::MyPost::ShowView would return "my_app/my_post/show" for
+      # For instance, MyApp::MyPost::Show would return "my_app/my_post/show" for
       # view_path.
       #
       # ==== Returns
       # * <tt>String</tt>
       def view_path
-        @view_path ||= anonymous? ? superclass.view_path : name.sub(/View$/, '').underscore
+        @view_path ||= anonymous? ? superclass.view_path : name.underscore
       end
 
       def attribute(*names)
@@ -74,16 +74,18 @@ module ActiveView
     delegate :process, to: :presenter
 
     attr_internal :block
+    attr_internal :options
 
-    def initialize(assigns = {}, controller = nil, object = {}, &block)
+    def initialize(controller = nil, object = {}, &block)
       @_config = ActiveSupport::InheritableOptions.new
 
-      assign(assigns)
       assign_controller(controller)
       _prepare_context
       @_object = object.is_a?(Hash) ? AttributeWrapper.new(object) : object
       @_block = block if block_given?
-      presenter.process(:show)
+      @_options = {}
+
+      process(:show)
     end
 
     def to_model
@@ -92,6 +94,10 @@ module ActiveView
 
     def model_class
       model_name_from_record_or_class(self).name.constantize
+    end
+
+    def renderable?
+      valid?
     end
 
     AttributeWrapper = Struct.new(:attributes)
