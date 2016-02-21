@@ -105,8 +105,13 @@ module ActiveView
       model_name_from_record_or_class(self).name.constantize
     end
 
+    ## Allows other systems, such as authorization, to block rendering
+    define_model_callbacks :renderable
+
     def renderable?
-      valid?
+      run_callbacks :renderable do
+        valid?
+      end
     end
 
     AttributeWrapper = Struct.new(:attributes)
