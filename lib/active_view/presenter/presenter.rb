@@ -11,7 +11,7 @@ module ActiveView
 
     class << self
       def internal_methods
-        superclass.internal_methods - [:show]
+        superclass.internal_methods - [:show] # TODO: remove once implicit actions are available.
       end
     end
 
@@ -19,6 +19,11 @@ module ActiveView
     delegate :session, :params, :options, to: :model
     delegate :assign, to: :model
 
+    # capture calls are set on the parent view, where the blocks are actually defined.
+    delegate :capture, to: 'model.parent'
+
+    # Usually this is used to manipulate the View model directly but it can be
+    # used for very complex configuration strategy.
     attr_internal :block
 
     def initialize(model, block)
@@ -26,15 +31,20 @@ module ActiveView
       @_block = block
     end
 
+    # TODO: Remove in favour of an implicit action call
     def show
     end
 
     private
 
+    # The default implementation simply yields the model for manipulation before
+    # rendering.
     def run_block
-      @block_content = model.parent.capture(model, &block) unless block.blank?
+      @block_content = capture(model, &block) unless block.blank?
     end
 
+    # Assign all instance variables to the view so that they are available in the
+    # template.
     def set_assigns
       protected_vars = _protected_ivars
       variables      = instance_variables

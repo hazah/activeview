@@ -8,15 +8,13 @@ module ActiveView
     include ActiveModel::AttributeMethods
     include ActiveModel::Validations
 
-
     include Rendering
 
     class << self
       attr_reader :abstract
       alias_method :abstract?, :abstract
 
-      # Define a controller as abstract. See internal_methods for more
-      # details.
+      # Define a view as abstract.
       def abstract!
         @abstract = true
       end
@@ -34,6 +32,7 @@ module ActiveView
           klass.instance_variable_set(:@abstract, false)
         end
 
+        # Determine the presenter class that will manipulate this view.
         unless klass.instance_variable_defined?(:@presenter)
           klass.instance_variable_set(:@presenter, "#{klass.view_path}/presenter".camelize.constantize)
         end
@@ -53,8 +52,14 @@ module ActiveView
 
       def attribute(*names)
         delegate *names, to: :object
-        names.each { |name| delegate :"#{name}=", to: :object }
+        define_attribute_methods *names
       end
+    end
+
+    attribute_method_suffix '='
+
+    def attribute=(attr, value)
+      object.send("#{attr}=", value)
     end
 
     # Delegates to the class' #view_path
