@@ -24,8 +24,8 @@ of forms, Rails' support for structured application logic ends.
 
 #### Enter _Active View_...
 
-Active View is an application mini-framework that includes the missing components for creating
-views according to the
+Active View is an application mini-framework that includes the components for creating views
+according to the
 [Model-View-Presenter (MVP)](https://en.wikipedia.org/wiki/Model-view-presenter)
 pattern.
 
