@@ -60,8 +60,7 @@ commands on behalf of the view. Presenters load and manipulate models, giving th
 the state and metadata it needs to produce its own renderable data and render itself
 based on the context in which it needs to do so.
 
-#### The end result is a framework that allows for independent in-app components to be
-developed, potentially as self contained content blocks, widgets, forms, and more.
+#### The end result is a framework that allows for independent in-app components to be developed, potentially as self contained content blocks, widgets, forms, and more.
 
 # Installation
 
