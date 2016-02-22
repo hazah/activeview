@@ -47,19 +47,24 @@ The _View layer_ represents your _Model layer_, and encapsulates the view logic 
 is spcecific to your model and optionally binds it to a template. In Active View,
 view classes are derived from `ActiveView::Base`. Active View allows you to embellish
 your model with view logic methods. Used directly within templates, these objects
-are self contained units of rendered data suitable for direct output. These objects
-can themselves be rendered, in which case a corresponding template, with the object
-as the view context is used for the output.
+are self contained units of rendered data suitable for direct output. In this role
+they are treated as models themselves, thus act as _Model Presenters_ or _View Models_
+(related patterns, but not part of MVP itself) which decorate their models for the view.
+Furthermore, These objects can themselves be passed to the render method, in which
+case a corresponding template, much like a partial, with the object as the view context
+is used for the output. As it is rendered, the template will have access to the methods
+and instance variables of the view object.
 
 _Presenter layer_
 
+TODO: Write description
 
-The end result is a framework that allows for independent in-app components to be
+#### The end result is a framework that allows for independent in-app components to be
 developed, potentially as self contained content blocks, widgets, forms, and more.
 
 
-`
-actions/models/[resource]/{show,form}.rb
-actions/presenters/{show,form}_form.rb
-actions/views/[resource]/{show,form}.html.erb
-`
+
+* actions/models/[resource]/{show,form}.rb
+* actions/presenters/[resource]_{show,form}.rb
+* actions/views/[resource]/{show,form}.html.erb
+
