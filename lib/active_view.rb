@@ -17,6 +17,7 @@ module ActiveView
   eager_autoload do
     autoload :Base
     autoload :Rendering
+    autoload :Form
 
     autoload_under "renderer" do
       autoload :ViewRenderer
@@ -24,6 +25,7 @@ module ActiveView
 
     autoload_under "presenter" do
       autoload :Presenter
+      autoload :FormPresenter
     end
   end
 end

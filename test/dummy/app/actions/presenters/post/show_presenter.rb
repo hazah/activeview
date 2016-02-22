@@ -1,4 +1,4 @@
-class Post::Show::Presenter < ActiveView::Presenter
+class Post::ShowPresenter < ActiveView::Presenter
   before_action :show, :set_extra_var
 
   private

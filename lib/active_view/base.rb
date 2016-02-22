@@ -34,7 +34,7 @@ module ActiveView
 
         # Determine the presenter class that will manipulate this view.
         unless klass.instance_variable_defined?(:@presenter)
-          klass.instance_variable_set(:@presenter, "#{klass.view_path}/presenter".camelize.constantize)
+          klass.instance_variable_set(:@presenter, ("#{klass.view_path}_presenter".camelize.constantize rescue nil))
         end
 
         super
@@ -94,7 +94,7 @@ module ActiveView
       @_block = block if block_given?
       @_options = {}
 
-      process(:show)
+      process(:show) unless presenter.blank?
     end
 
     def to_model
