@@ -1,4 +1,6 @@
-## Motivation
+## Active View
+
+### Motivation
 
 > The _View layer_ is composed of "templates" that are responsible for providing appropriate
 > representations of your application's resources. Templates can come in a variety of formats,
@@ -20,9 +22,7 @@ typical flow of the template itself. Apart from builder classes for forms, which
 wrapper objects around global helpers that facilitate additional apis for the proper submission
 of forms, Rails' support for structured application logic ends.
 
-Enter _Active View_...
-
-## Active View
+#### Enter _Active View_...
 
 Active View is an application mini-framework that includes the missing components for creating
 views according to the
