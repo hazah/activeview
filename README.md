@@ -55,16 +55,22 @@ case a corresponding template, much like a partial, with the object as the view 
 is used for the output. As it is rendered, the template will have access to the methods
 and instance variables of the view object.
 
-_Presenter layer_
-
-TODO: Write description
+The _Presenter layer_ is responsible for handling the initialization and executing
+commands on behalf of the view. Presenters load and manipulate models, giving the view
+the state and metadata it needs to produce its own renderable data and render itself
+based on the context in which it needs to do so.
 
 #### The end result is a framework that allows for independent in-app components to be
 developed, potentially as self contained content blocks, widgets, forms, and more.
 
+# Installation
 
+## Directory structure
 
 * actions/models/[resource]/{show,form}.rb
 * actions/presenters/[resource]_{show,form}.rb
 * actions/views/[resource]/{show,form}.html.erb
 
+# Examples
+
+TODO: Clarity through code...
