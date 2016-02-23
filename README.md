@@ -75,3 +75,14 @@ the state of the view.
 # Examples
 
 TODO: Clarity through code...
+
+# Emergent patterns
+
+Some design patterns enabled by this framework are a happy coincidence. Nevertheless, since they are enabled by the framework, how they may be applied warrants a closer investigation.
+
+## _Model Presenters_ / _View Models_
+
+Mentioned above, is the ability for a view object to be treated as a model object by the outside world. This enables a
+pattern where this object is used to obtain formatted data suitable for rendering by querying the object directly.
+Since it is a true view, and is responsible for generating rendered content, the object's properties can be obtained
+from a view or a controller.
