@@ -236,11 +236,49 @@ class Post::Show < ActiveView::Base
 
   # helper methods
   def header_tag
+    # The implication is that this might be rendered from a different action/controller
+    # combination.
+
     params[:controller] == 'posts' && params[:action] == 'show' ? :h1 : :h2
   end
 
-  # access to the object's attributes.
+  def model_name
+    Post.model_name.human
+  end
+
+  # helper overrides!
+  def current_page?(action)
+    super(controller: :posts, action: action)
+  end
+
+  # wrapper helpers work too!
+  def post_link(action, link_content, destination, options={})
+    link_to_unless(current_page?(action), content, destination, options) {}
+  end
+
+  def index_link
+    post_link :index, model_name, Post
+  end
+
+  def show_link
+    post_link :show, title, post
+  end
+
+  def new_link
+    post_link :new, t(:create, model: model_name.singularize), post
+  end
+
+  def edit_link
+    post_link :edit, t(:edit, model: title), edit_post(post)
+  end
+
+  def destroy_link
+    post_link :destroy, t(:destroy, model: title), post, method: :destroy
+  end
+
+  # access to the object's attributes directly as helpers as well.
   attr_helper :title, :body
+
 end
 
 ```
@@ -248,19 +286,27 @@ end
 ```ruby
 ## actions/views/post/show.rb
 <%= div_for post do %>
+  <div class="back-link"><%= index_link %></div>
   <%= content_tag header_tag, title %>
   <p><%= body %></p>
+  <ul class="links">
+    <li><%= edit_link %></li>
+    <li><%= destroy_link %></li>
+  </ul>
 <% end %>
 ```
 
 ```ruby
 # actions/models/post/form.rb
 class Post::Form < ActiveView::Form
+  # We declare all the input fields and their options which will be used
+  # to inform the form builder.
   input :title, :body
 end
 
 # actions/presenters/post_presenter.rb
 class Post::Presenter < ActiveView::Presenter
+  # Standard form operations
   def form
     view.post.assign_attributes post_params
   end
@@ -292,13 +338,35 @@ end
 ```ruby
 # actions/views/posts/form.html.erb
 <%= form post do |post_form| %>
-  <%= post_form.label :title %>:
-  <%= post_form.input :title %><br />
-  <%= post_form.label :body %>
-  <%= post_form.input :body %><br />
-  <%= post_form.submit %>
+  <% if post.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(post.errors.count, "error") %> prohibited this <%= model_name %> from being saved:</h2>
+
+      <ul>
+       <%= post.errors.full_messages.each do |message| %>
+        <li><%%= message %></li>
+       <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= post_form.label :title %>
+    <%= post_form.input :title %>
+  </div>
+
+  <div class="field">
+    <%= post_form.label :body %>
+    <%= post_form.input :body %>
+  </div>
+
+  <div class="actions">
+    <%= post_form.submit %>
+  </div>
 <% end %>
 ```
+
+
 # Emergent patterns
 
 Some design patterns enabled by this framework are a happy coincidence. Nevertheless, since
