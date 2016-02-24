@@ -82,7 +82,9 @@ a standard PostsController with all resource routes enabled and the correspondin
 files.
 
 ```ruby
+
 ## db/create_posts.rb
+
 class CreatePosts < ActiveRecord::Migration
   def change
     create_table :posts do |t|
@@ -118,15 +120,20 @@ class PostsController < ApplicationController
   end
 
 end
+
 ```
 
 ```ruby
+
 ## views/posts/index.html.erb
 <%= view(Post::Show, @posts) %>
+
 ```
 
 ```ruby
+
 ## controllers/posts_controller.rb
+
 class PostsController < ApplicationController
 
   def show
@@ -137,12 +144,16 @@ end
 ```
 
 ```ruby
+
 ## views/posts/new.html.erb
 <%= view(Post::Show, @post) %>
+
 ```
 
 ```ruby
+
 ## controllers/posts_controller.rb
+
 class PostsController < ApplicationController
 
   def new
@@ -150,15 +161,20 @@ class PostsController < ApplicationController
   end
 
 end
+
 ```
 
 ```ruby
+
 ## views/posts/new.html.erb
 <%= view(Post::Form, @post) %>
+
 ```
 
 ```ruby
+
 ## controllers/posts_controller.rb
+
 class PostsController < ApplicationController
 
   def edit
@@ -166,14 +182,19 @@ class PostsController < ApplicationController
   end
 
 end
+
 ```
 
 ```ruby
+
 ## views/posts/edit.html.erb
+
 <%= view(Post::Form, @post) %>
+
 ```
 
 ```ruby
+
 ## Note that the following actions render the form directly. This is because it is a view.
 ## Therefore, we do not need a template to handle this action!
 ## Note, also, that we are not passing parameters around. Since we've handed off the
@@ -181,6 +202,7 @@ end
 
 
 ## controllers/posts_controller.rb
+
 class PostsController < ApplicationController
 
   def create
@@ -194,7 +216,9 @@ class PostsController < ApplicationController
 
 end
 
+
 ## controllers/posts_controller.rb
+
 class PostsController < ApplicationController
 
   def update
@@ -208,9 +232,12 @@ class PostsController < ApplicationController
 
 end
 
+
 ## We still forward to the form for destroy operation.
 
+
 ## controllers/posts_controller.rb
+
 class PostsController < ApplicationController
 
   def destroy
@@ -227,7 +254,9 @@ end
 Now that we have handed off our model to the view layer, it's time to take over rendering.
 
 ```ruby
+
 ## actions/models/show.rb
+
 class Post::Show < ActiveView::Base
   ## Lets show of some features...
 
@@ -284,7 +313,9 @@ end
 ```
 
 ```ruby
+
 ## actions/views/post/show.rb
+
 <%= div_for post do %>
   <div class="back-link"><%= index_link %></div>
   <%= content_tag header_tag, title %>
@@ -294,25 +325,48 @@ end
     <li><%= destroy_link %></li>
   </ul>
 <% end %>
+
 ```
 
 ```ruby
+
 # actions/models/post/form.rb
+
 class Post::Form < ActiveView::Form
   # We declare all the input fields and their options which will be used
   # to inform the form builder.
   input :title, :body
 end
 
+
+## actions/presenters/application_presenter.rb
+
+class ApplicationPresenter < ActiveView::Presenter
+  private
+
+  def post_params
+    # If this is a nested form, simply obtain the already sanitized hash from the
+    # parent form.
+    return parent_params[:post_attributes] if parent_params.has_key? :post_attributes
+
+    # view.post_params is the helper in ApplicationController
+    params[:post].permit view.post_params if params.has_key? :post
+  end
+
+  helper_method :post_params
+end
+
+
 # actions/presenters/post_presenter.rb
-class Post::Presenter < ActiveView::Presenter
+
+class Post::Presenter < ApplicationPresenter
   # Standard form operations
-  def form
+  def populate
     post.assign_attributes post_params
   end
 
   def validate
-    post.valid?
+    post.validate
   end
 
   def create
@@ -333,14 +387,15 @@ class Post::Presenter < ActiveView::Presenter
     view.post
   end
 
-  def post_params
-    params[:post].permit view.post_params
-  end
+  helper_method :post
 end
+
 ```
 
 ```ruby
+
 # actions/views/posts/form.html.erb
+
 <%= form_for post do |post_form| %>
   <% if post.errors.any? %>
     <div id="error_explanation">
@@ -368,6 +423,7 @@ end
     <%= post_form.submit %>
   </div>
 <% end %>
+
 ```
 
 
@@ -406,11 +462,51 @@ TODO: Clarity through code...
 Taking advantage of the presenter, when one returns a view as a response to an action it's
 possible to make use of the callback mechanism and the actions of the presenter to execute
 various operations. This is essentially how the form submission mechanism works in the
-standard resource oriented application.
+standard resource oriented application using Active View.
 
-### Examples
+The command sequence for the form looks like this:
 
-TODO: Clarity through code...
+```ruby
+
+after_initialize { |view| process(:populate) if populate? }
+after_initialize { |view| process(:validate) if validate? }
+after_initialize { |view| process(operation) if submit?   }
+
+delegate :populate?, :validate?, :submit?, :valid?, :submitted?, :operation, to: :presenter
+
+```
+
+The implementation of `ActiveView::Presenter`:
+
+```ruby
+
+def populate?
+  [:create, :update].include? params[:action]
+end
+
+def validate?
+  populate?
+end
+
+def submit?
+  should_submit = [:create, :update, :destroy].include? params[:action]
+  should_submit = should_submit && valid? if validate?
+  should_submit
+end
+
+def operation
+  params[:action]
+end
+
+def valid?
+  @_valid ||= false
+end
+
+def submitted?
+  @_submitted ||= false
+end
+
+```
 
 ## _Builders_
 

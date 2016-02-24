@@ -1,5 +1,4 @@
 class Post::Show < ActiveView::Base
-  view_for :post
   attr_helper :title, :body
 
   validates_presence_of :title

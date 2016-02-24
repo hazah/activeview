@@ -1,7 +1,7 @@
 class Post::Presenter < ActiveView::Presenter
   before_action :show, :set_extra_var
 
-  def form
+  def populate
     view.post.assign_attributes post_params
   end
 
@@ -23,11 +23,13 @@ class Post::Presenter < ActiveView::Presenter
 
   private
 
-  def set_extra_var
-    @extra_var = "Extra variable."
+  def post
+    view.object
   end
 
-  def post_params
-    params[:post].permit view.post_params
+  helper_method :post
+
+  def set_extra_var
+    @extra_var = "Extra variable."
   end
 end

@@ -54,12 +54,6 @@ module ActiveView
         delegate *names, to: :object
         define_attribute_methods *names
       end
-
-      def view_for(object_name)
-        define_method object_name do
-          object
-        end
-      end
     end
 
     attribute_method_suffix '='
@@ -105,7 +99,7 @@ module ActiveView
       end
     end
 
-    after_initialize { |view| view.process(:show) unless view.presenter.blank? }
+    after_initialize { |view| view.process(:show) }
 
     def to_model
       object.respond_to?(:to_model) ? object.to_model : self
@@ -120,7 +114,7 @@ module ActiveView
 
     def renderable?
       run_callbacks :renderable do
-        valid?
+        true
       end
     end
 

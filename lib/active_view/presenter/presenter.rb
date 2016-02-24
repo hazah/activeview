@@ -1,20 +1,22 @@
+require 'abstract_controller/helpers'
 require 'abstract_controller/callbacks'
 
 module ActiveView
   class Presenter < AbstractController::Base
+    include ActionController::Helpers
     include AbstractController::Callbacks
 
     before_action :show, :run_block
     after_action :show, :set_assigns
 
-    around_action :validate, :set_validate_pased
+    around_action :validate, :set_valid
     around_action :create, :update, :set_submitted
 
     abstract!
 
     class << self
       def internal_methods
-        superclass.internal_methods - [:show ,:form, :validate, :create, :update] # TODO: remove once implicit actions are available.
+        superclass.internal_methods - [:show, :populate, :validate, :create, :update, :destroy] # TODO: remove once implicit actions are available.
       end
     end
 
@@ -42,7 +44,7 @@ module ActiveView
     end
 
     # TODO: Remove in favour of an implicit action call
-    def form
+    def populate
     end
 
     # TODO: Remove in favour of an implicit action call
@@ -63,13 +65,17 @@ module ActiveView
 
     ## Public API
 
-    def should_validate?
+    def populate?
       [:create, :update].include? params[:action]
     end
 
-    def should_submit?
+    def validate?
+      populate?
+    end
+
+    def submit?
       should_submit = [:create, :update, :destroy].include? params[:action]
-      should_submit = should_submit && validation_passed? if should_validate?
+      should_submit = should_submit && valid? if validate?
       should_submit
     end
 
@@ -77,8 +83,8 @@ module ActiveView
       params[:action]
     end
 
-    def validation_passed?
-      @_validation_passed ||= false
+    def valid?
+      @_valid ||= false
     end
 
     def submitted?
@@ -87,12 +93,18 @@ module ActiveView
 
     private
 
+    def block_content
+      @_block_content ||= nil
+    end
+
+    helper_method :block_content
+
     # The default implementation simply yields the model for manipulation before
     # rendering.
     def run_block
-      @block_content = nil
+      @_block_content = nil
       unless block.blank?
-        @block_content =  if view.parent.present?
+        @_block_content =  if view.parent.present?
                             capture(view, &block)
                           else
                             ## We've been called directly from a controller.
@@ -114,8 +126,8 @@ module ActiveView
       assign(variables)
     end
 
-    def set_validate_pased
-      @_validation_passed = yield
+    def set_valid
+      @_valid = yield
     end
 
     def set_submitted
@@ -123,8 +135,8 @@ module ActiveView
     end
 
     DEFAULT_PROTECTED_INSTANCE_VARIABLES = Set.new %w(
-      @_action_name @_response_body
-      @_view @_block
+      @_action_name @_response_body @_block_content
+      @_view @_block @_valid @_submitted
     ).map(&:to_sym)
 
     def _protected_ivars # :nodoc:
