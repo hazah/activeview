@@ -289,6 +289,16 @@ class Post::Presenter < ActiveView::Presenter
 end
 ```
 
+```ruby
+# actions/views/posts/form.html.erb
+<%= form post do |post_form| %>
+  <%= post_form.label :title %>:
+  <%= post_form.input :title %><br />
+  <%= post_form.label :body %>
+  <%= post_form.input :body %><br />
+  <%= post_form.submit %>
+<% end %>
+```
 # Emergent patterns
 
 Some design patterns enabled by this framework are a happy coincidence. Nevertheless, since
