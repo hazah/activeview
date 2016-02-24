@@ -308,26 +308,30 @@ end
 class Post::Presenter < ActiveView::Presenter
   # Standard form operations
   def form
-    view.post.assign_attributes post_params
+    post.assign_attributes post_params
   end
 
   def validate
-    view.post.valid?
+    post.valid?
   end
 
   def create
-    view.post.save
+    post.save
   end
 
   def update
-    view.post.save
+    post.save
   end
 
   def destroy
-    view.post.destroy
+    post.destroy
   end
 
   private
+
+  def post
+    view.post
+  end
 
   def post_params
     params[:post].permit view.post_params
@@ -337,7 +341,7 @@ end
 
 ```ruby
 # actions/views/posts/form.html.erb
-<%= form post do |post_form| %>
+<%= form_for post do |post_form| %>
   <% if post.errors.any? %>
     <div id="error_explanation">
       <h2><%= pluralize(post.errors.count, "error") %> prohibited this <%= model_name %> from being saved:</h2>
