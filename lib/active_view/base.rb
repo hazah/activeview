@@ -85,7 +85,7 @@ module ActiveView
 
     define_model_callbacks :initialize
 
-    def initialize(parent, controller = nil, object = {}, options = {}, &block)
+    def initialize(parent = nil, controller = nil, object = {}, options = {}, &block)
       run_callbacks :initialize do
         @_config = ActiveSupport::InheritableOptions.new
 

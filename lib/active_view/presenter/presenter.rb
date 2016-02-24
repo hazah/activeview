@@ -31,7 +31,8 @@ module ActiveView
       @_block = block
     end
 
-    ## Placeholders so that action calls relied on by the view succed.
+    ## Placeholders so that action calls relied on by the view succed. These
+    ## are to be implemented by subclasses.
 
     # TODO: Remove in favour of an implicit action call
     def show
@@ -53,6 +54,10 @@ module ActiveView
     def update
     end
 
+    # TODO: Remove in favour of an implicit action call
+    def destroy
+    end
+
     ## Public API
 
     def should_validate?
@@ -60,7 +65,7 @@ module ActiveView
     end
 
     def should_submit?
-      [:create, :update].include? params[:action]
+      [:create, :update, :destroy].include? params[:action]
     end
 
     def operation
