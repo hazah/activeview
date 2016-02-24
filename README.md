@@ -166,9 +166,8 @@ class PostsController < ApplicationController
 
 end
 ```
-
+ ## views/posts/edit.html.erb
 ```erb
-## views/posts/edit.html.erb
 <%= view(Post::Form, @post) %>
 ```
 
@@ -225,7 +224,8 @@ end
 
 Now that we have handed off our model to the view layer, it's time to take over rendering.
 
-```ruby
+```erb
+
 ```
 
 # Emergent patterns
