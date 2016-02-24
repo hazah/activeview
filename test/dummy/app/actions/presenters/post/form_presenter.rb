@@ -1,2 +1,2 @@
-class Post::FormPresenter < ActiveView::FormPresenter
+class Post::FormPresenter < Post::Presenter
 end

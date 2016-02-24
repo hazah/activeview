@@ -11,7 +11,7 @@ module ActiveView
 
     class << self
       def internal_methods
-        superclass.internal_methods - [:show] # TODO: remove once implicit actions are available.
+        superclass.internal_methods - [:show ,:form, :validate, :process_form] # TODO: remove once implicit actions are available.
       end
     end
 
@@ -33,6 +33,16 @@ module ActiveView
 
     # TODO: Remove in favour of an implicit action call
     def show
+    end
+
+    # TODO: Remove in favour of an implicit action call
+    def form
+    end
+
+    def validate
+    end
+
+    def process_form
     end
 
     private
