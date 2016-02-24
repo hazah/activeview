@@ -170,7 +170,9 @@ end
 ```erb
 ## views/posts/edit.html.erb
 <%= view(Post::Form, @post) %>
+```
 
+```ruby
 ## Note that the following actions render the form directly. This is because it is a view.
 ## Therefore, we do not need a template to handle this action!
 ## Note, also, that we are not passing parameters around. Since we've handed off the
@@ -203,6 +205,7 @@ class PostsController < ApplicationController
       render @form
     end
   end
+
 end
 
 ## We still forward to the form for destroy operation.
