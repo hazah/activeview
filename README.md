@@ -77,6 +77,141 @@ the state of the view.
 
 TODO: Clarity through code...
 
+Lets us take the infamous blog example where we have a Post model with a title and a body,
+a standard PostsController with all resource routes enabled and the corresponding themplate
+files.
+
+```ruby
+## db/create_posts.rb
+class CreatePosts < ActiveRecord::Migration
+  def change
+    create_table :posts do |t|
+      t.string :title
+      t.text :body
+
+      t.timestamps null: false
+    end
+  end
+end
+
+## models/post.rb
+class Post < ActiveRecord::Base
+end
+
+## controllers/application_controller.rb
+class ApplicationController < ActionController::Base
+  private
+
+  def post_params
+    [:title, :body]
+  end
+
+  helper_method :post_params
+end
+
+## controllers/posts_controller.rb
+class PostsController < ApplicationController
+
+  def index
+    @posts = Post.all
+  end
+
+end
+
+## views/posts/index.html.erb
+<%= view(Post::Show, @posts) %>
+
+## controllers/posts_controller.rb
+class PostsController < ApplicationController
+
+  def show
+    @post = Post.find params[:id]
+  end
+
+end
+
+## views/posts/new.html.erb
+<%= view(Post::Show, @post) %>
+
+## controllers/posts_controller.rb
+class PostsController < ApplicationController
+
+  def new
+    @post = Post.new
+  end
+
+end
+
+## views/posts/new.html.erb
+<%= view(Post::Form, @post) %>
+
+## controllers/posts_controller.rb
+class PostsController < ApplicationController
+
+  def edit
+    @post = Post.find params[:id]
+  end
+
+end
+
+## views/posts/edit.html.erb
+<%= view(Post::Form, @post) %>
+
+## Note that the following actions render the form directly. This is because it is a view.
+## Therefore, we do not need a template to handle this action!
+## Note, also, that we are not passing parameters around. Since we've handed off the
+## model to a view, the parameters will still be available in that context.
+
+end
+
+## controllers/posts_controller.rb
+class PostsController < ApplicationController
+
+  def create
+    @form = view(Post::Form, Post.new)
+    if @form.submitted?
+      redirect_to @form.post
+    else
+      render @form
+    end
+  end
+
+end
+
+## controllers/posts_controller.rb
+class PostsController < ApplicationController
+
+  def update
+    @form = view(Post::Form, Post.find(params[:id]))
+    if @form.submitted?
+      redirect_to @form.post
+    else
+      render @form
+    end
+  end
+end
+
+## We still forward to the form for destroy operation.
+
+## controllers/posts_controller.rb
+class PostsController < ApplicationController
+
+  def destroy
+    @form = view(Post::Form, Post.find(params[:id]))
+    if @form.submitted?
+      redirect_to Posts
+    end
+  end
+end
+
+
+```
+
+Now that we have handed off our model to the view layer, it's time to take over rendering.
+
+```ruby
+```
+
 # Emergent patterns
 
 Some design patterns enabled by this framework are a happy coincidence. Nevertheless, since
