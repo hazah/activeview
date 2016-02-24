@@ -63,7 +63,7 @@ based on the context in which it needs to do so. In Active View, during lifecycl
 the view object, the presenter is invoked to process specific actions, which manipulate
 the state of the view.
 
-#### The end result is a framework that allows for independent in-app components to be developed, potentially as self contained content blocks, widgets, forms, and more.
+#### The end result is a framework that allows for independent in-app components to be developed, potentially as self contained content blocks, widgets, forms, builders, and more.
 
 # Installation
 
@@ -73,7 +73,7 @@ the state of the view.
 * actions/presenters/[resource]_{show,form}.rb
 * actions/views/[resource]/{show,form}.html.erb
 
-# Examples
+## Examples
 
 TODO: Clarity through code...
 
@@ -82,7 +82,7 @@ TODO: Clarity through code...
 Some design patterns enabled by this framework are a happy coincidence. Nevertheless, since
 they are enabled by the framework, how they may be applied warrants a closer investigation.
 
-## _Model Presenters_ / _View Models_
+## _Model Presenters_
 
 Mentioned above, is the ability for a view object to be treated as a model object by the
 outside world. This enables a pattern where this object is used to obtain formatted data
@@ -91,3 +91,41 @@ responsible for generating rendered content, the object's properties can used to
 rendered data from any conroller and by extention, view, context. Effectively this means
 that once we obtain a view object, we can collect rendered information in an arbitrary
 fashion.
+
+### Examples
+
+TODO: Clarity through code...
+
+## _View Models_
+
+At the most basic level, the presenter does only what is conventional of a typical rails
+action. Presenters treat the external controller actions as context information from which
+to derive their state. This means that without any further extension to the presenter, the
+view simply acts as a simple binder for the rendering template.
+
+### Examples
+
+TODO: Clarity through code...
+
+## _Services_
+
+Taking advantage of the presenter, when one returns a view as a response to an action it's
+possible to make use of the callback mechanism and the actions of the presenter to execute
+various operations. This is essentially how the form submission mechanism works in the
+standard resource oriented application.
+
+### Examples
+
+TODO: Clarity through code...
+
+## _Builders_
+
+When you override the object that is passed into the block sent with the call to `render` to
+collect custom configuration, add callbacks to various points in the lifecycle of the
+view to execute actions on the presenter, take advantage of layouts and collection rendering,
+and add some custom state, the possibilities of the resulted output are probably endless for
+generic, extensible themeing components or any other purely renderable structure.
+
+### Examples
+
+TODO: Clarity through code...
