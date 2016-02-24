@@ -178,7 +178,6 @@ end
 ## Note, also, that we are not passing parameters around. Since we've handed off the
 ## model to a view, the parameters will still be available in that context.
 
-end
 
 ## controllers/posts_controller.rb
 class PostsController < ApplicationController
