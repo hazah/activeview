@@ -471,11 +471,14 @@ The implementation of `ActiveView::Presenter`:
 ```ruby
 
 def populate?
-  [:create, :update].include? params[:action]
+  # Only populate if the calling controller matches the intended resources.
+  # Otherwise the assumption is that the object was populated by
+  # accepts_nested_attributes_for.
+  validate? && params[:controller].singularize == view.view_path.rpartition('/').first
 end
 
 def validate?
-  populate?
+  [:create, :update].include? params[:action]
 end
 
 def submit?
