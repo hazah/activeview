@@ -34,7 +34,7 @@ module ActiveView
 
         # Determine the presenter class that will manipulate this view.
         unless klass.instance_variable_defined?(:@presenter)
-          klass.instance_variable_set(:@presenter, ("#{klass.view_path.camelize.deconstantize}::Presenter".constantize rescue nil))
+          klass.instance_variable_set(:@presenter, ("#{klass.view_path.camelize.deconstantize}::Presenter".constantize rescue ActiveView::Presenter))
         end
 
         super

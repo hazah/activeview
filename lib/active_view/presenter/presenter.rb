@@ -8,6 +8,7 @@ module ActiveView
     after_action :show, :set_assigns
 
     around_action :validate, :set_validate_pased
+    around_action :create, :update, :set_submitted
 
     abstract!
 
@@ -76,6 +77,14 @@ module ActiveView
       params[:action]
     end
 
+    def validation_passed?
+      @_validation_passed ||= false
+    end
+
+    def submitted?
+      @_submitted ||= false
+    end
+
     private
 
     # The default implementation simply yields the model for manipulation before
@@ -107,6 +116,10 @@ module ActiveView
 
     def set_validate_pased
       @_validation_passed = yield
+    end
+
+    def set_submitted
+      @_submitted = yield
     end
 
     DEFAULT_PROTECTED_INSTANCE_VARIABLES = Set.new %w(
