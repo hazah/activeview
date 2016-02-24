@@ -119,7 +119,7 @@ class PostsController < ApplicationController
 end
 ```
 
-```erb
+```ruby
 ## views/posts/index.html.erb
 <%= view(Post::Show, @posts) %>
 ```
@@ -135,7 +135,7 @@ class PostsController < ApplicationController
 end
 ```
 
-```erb
+```ruby
 ## views/posts/new.html.erb
 <%= view(Post::Show, @post) %>
 ```
@@ -151,7 +151,7 @@ class PostsController < ApplicationController
 end
 ```
 
-```erb
+```ruby
 ## views/posts/new.html.erb
 <%= view(Post::Form, @post) %>
 ```
@@ -167,7 +167,7 @@ class PostsController < ApplicationController
 end
 ```
 
-```erb
+```ruby
 ## views/posts/edit.html.erb
 <%= view(Post::Form, @post) %>
 ```
@@ -242,7 +242,7 @@ end
 
 ```
 
-```erb
+```ruby
 ## actions/views/post/show.rb
 <%= div_for post do %>
   <%= content_tag header_tag, title %>
