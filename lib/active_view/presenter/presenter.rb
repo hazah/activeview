@@ -20,7 +20,7 @@ module ActiveView
       end
     end
 
-    attr_internal :model
+    attr_internal :view
     delegate :session, :params, :options, to: :view
     delegate :assign, to: :view
 
@@ -66,11 +66,14 @@ module ActiveView
     ## Public API
 
     def populate?
-      [:create, :update].include? params[:action]
+      # Only populate if the calling controller matches the intended resources.
+      # Otherwise the assumption is that the object was populated by
+      # accepts_nested_attributes_for.
+      validate? && params[:controller].singularize == view.view_path.rpartition('/').first
     end
 
     def validate?
-      populate?
+      [:create, :update].include? params[:action]
     end
 
     def submit?
@@ -91,13 +94,15 @@ module ActiveView
       @_submitted ||= false
     end
 
-    private
-
     def block_content
       @_block_content ||= nil
     end
 
     helper_method :block_content
+
+    def setup_parent
+      view.parent.presenter.setup_parent_params(self) if view.parent.present?
+    end
 
     # The default implementation simply yields the model for manipulation before
     # rendering.
@@ -135,8 +140,8 @@ module ActiveView
     end
 
     DEFAULT_PROTECTED_INSTANCE_VARIABLES = Set.new %w(
-      @_action_name @_response_body @_block_content
-      @_view @_block @_valid @_submitted
+      @_action_name @_response_body @_parent_params
+      @_block_content @_view @_block @_valid @_submitted
     ).map(&:to_sym)
 
     def _protected_ivars # :nodoc:

@@ -258,7 +258,7 @@ Now that we have handed off our model to the view layer, it's time to take over 
 ## actions/models/show.rb
 
 class Post::Show < ActiveView::Base
-  ## Lets show of some features...
+  ## Lets show off some features...
 
   # helper methods
   def header_tag
@@ -339,18 +339,6 @@ end
 ## actions/presenters/application_presenter.rb
 
 class ApplicationPresenter < ActiveView::Presenter
-  private
-
-  def post_params
-    # If this is a nested form, simply obtain the already sanitized hash from the
-    # parent form.
-    return parent_params[:post_attributes] if parent_params.has_key? :post_attributes
-
-    # view.post_params is the helper in ApplicationController
-    params[:post].permit view.post_params if params.has_key? :post
-  end
-
-  helper_method :post_params
 end
 
 
@@ -381,10 +369,14 @@ class Post::Presenter < ApplicationPresenter
   private
 
   def post
-    view.post
+    view.object
   end
 
-  helper_method :post
+  def post_params
+    params[:post].permit view.post_params if params.has_key? :post
+  end
+
+  helper_method :post, :post_params
 end
 
 ```
@@ -422,6 +414,7 @@ end
 <% end %>
 
 ```
+
 
 
 # Emergent patterns

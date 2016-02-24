@@ -13,6 +13,8 @@ module ActiveView
 
         base = self
 
+        presenter_helpers = base.presenter.respond_to(:_helpers) && base.presenter._helpers
+
         Class.new(base) do
           if routes
             include routes.url_helpers(supports_path)
@@ -21,6 +23,10 @@ module ActiveView
 
           if helpers
             include helpers
+          end
+
+          if presenter_helpers
+            include presenter_helpers
           end
 
           self._view_paths = base._view_paths
