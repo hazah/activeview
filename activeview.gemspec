@@ -22,7 +22,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'actionview', "~> 4.2.5.1"
   s.add_dependency 'activemodel', "~> 4.2.5.1"
   s.add_dependency 'actionpack', "~> 4.2.5.1"
-  s.add_dependency 'state_machines', "~> 0.4.0"
 
   s.add_development_dependency "rails"
   s.add_development_dependency "sqlite3"

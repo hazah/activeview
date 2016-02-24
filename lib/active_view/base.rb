@@ -83,19 +83,23 @@ module ActiveView
     attr_internal :block
     attr_internal :options
 
-    def initialize(parent, controller = nil, object = {}, &block)
-      @_config = ActiveSupport::InheritableOptions.new
+    define_model_callbacks :initialize
 
-      assign_controller(controller)
-      _prepare_context
+    def initialize(parent, controller = nil, object = {}, options = {}, &block)
+      run_callbacks :initialize do
+        @_config = ActiveSupport::InheritableOptions.new
 
-      @_parent = parent
-      @_object = object.is_a?(Hash) ? AttributeWrapper.new(object) : object
-      @_block = block if block_given?
-      @_options = {}
+        assign_controller(controller)
+        _prepare_context
 
-      process(:show) unless presenter.blank?
+        @_parent = parent
+        @_object = object.is_a?(Hash) ? AttributeWrapper.new(object) : object
+        @_block = block if block_given?
+        @_options = options
+      end
     end
+
+    after_initialize { |view| view.process(:show) unless view.presenter.blank? }
 
     def to_model
       object.respond_to?(:to_model) ? object.to_model : self

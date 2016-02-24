@@ -2,13 +2,14 @@ module ActiveView
   class Form < ActiveView::Base
     abstract!
 
-    delegate :save, to: :object
-
-    def initialize(parent, controller = nil, object = {}, &block)
-      super
+    after_initialize do |view|
       process(:form) unless presenter.blank?
-      if should_process? && process(:validate)
-        process(:process_form)
+    end
+
+    after_initialize do |view|
+      unless presenter.blank?
+        process(:validate) if presenter.should_validate?
+        process(presenter.operation) if presenter.should_submit?
       end
     end
 
@@ -18,12 +19,6 @@ module ActiveView
       run_callbacks :renderable do
         true
       end
-    end
-
-    private
-
-    def should_process?
-      true
     end
 
     ActiveSupport.run_load_hooks(:active_view_form, self)
