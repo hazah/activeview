@@ -7,6 +7,8 @@ module ActiveView
     before_action :show, :run_block
     after_action :show, :set_assigns
 
+    around_action :validate, :set_validate_pased
+
     abstract!
 
     class << self
@@ -65,7 +67,9 @@ module ActiveView
     end
 
     def should_submit?
-      [:create, :update, :destroy].include? params[:action]
+      should_submit = [:create, :update, :destroy].include? params[:action]
+      should_submit = should_submit && validation_passed? if should_validate?
+      should_submit
     end
 
     def operation
@@ -99,6 +103,10 @@ module ActiveView
         hash[name.slice(1, name.length)] = instance_variable_get(name)
       }
       assign(variables)
+    end
+
+    def set_validate_pased
+      @_validation_passed = yield
     end
 
     DEFAULT_PROTECTED_INSTANCE_VARIABLES = Set.new %w(

@@ -34,7 +34,7 @@ module ActiveView
 
         # Determine the presenter class that will manipulate this view.
         unless klass.instance_variable_defined?(:@presenter)
-          klass.instance_variable_set(:@presenter, ("#{klass.view_path}_presenter".camelize.constantize rescue nil))
+          klass.instance_variable_set(:@presenter, ("#{klass.view_path.camelize.deconstantize}::Presenter".constantize rescue nil))
         end
 
         super
@@ -50,9 +50,15 @@ module ActiveView
         @view_path ||= anonymous? ? superclass.view_path : name.underscore
       end
 
-      def attribute(*names)
+      def attr_helper(*names)
         delegate *names, to: :object
         define_attribute_methods *names
+      end
+
+      def view_for(object_name)
+        define_method object_name do
+          object
+        end
       end
     end
 

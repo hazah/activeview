@@ -96,6 +96,7 @@ end
 
 ## models/post.rb
 class Post < ActiveRecord::Base
+  validates_presense_of :title
 end
 
 ## controllers/application_controller.rb
@@ -228,8 +229,10 @@ Now that we have handed off our model to the view layer, it's time to take over 
 ```ruby
 ## actions/models/show.rb
 class Post::Show < ActiveView::Base
-
   ## Lets show of some features...
+
+  ## Give our passed in object a proper name
+  view_for :post
 
   # helper methods
   def header_tag
@@ -248,6 +251,42 @@ end
   <%= content_tag header_tag, title %>
   <p><%= body %></p>
 <% end %>
+```
+
+```ruby
+# actions/models/post/form.rb
+class Post::Form < ActiveView::Form
+  input :title, :body
+end
+
+# actions/presenters/post_presenter.rb
+class Post::Presenter < ActiveView::Presenter
+  def form
+    view.post.assign_attributes post_params
+  end
+
+  def validate
+    view.post.valid?
+  end
+
+  def create
+    view.post.save
+  end
+
+  def update
+    view.post.save
+  end
+
+  def destroy
+    view.post.destroy
+  end
+
+  private
+
+  def post_params
+    params[:post].permit view.post_params
+  end
+end
 ```
 
 # Emergent patterns
