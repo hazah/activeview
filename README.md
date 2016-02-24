@@ -78,7 +78,7 @@ the state of the view.
 TODO: Clarity through code...
 
 Lets us take the infamous blog example where we have a Post model with a title and a body,
-a standard PostsController with all resource routes enabled and the corresponding themplate
+a standard PostsController with all resource routes enabled and the corresponding template
 files.
 
 ```ruby
@@ -117,10 +117,14 @@ class PostsController < ApplicationController
   end
 
 end
+```
 
+```erb
 ## views/posts/index.html.erb
 <%= view(Post::Show, @posts) %>
+```
 
+```ruby
 ## controllers/posts_controller.rb
 class PostsController < ApplicationController
 
@@ -129,10 +133,14 @@ class PostsController < ApplicationController
   end
 
 end
+```
 
+```erb
 ## views/posts/new.html.erb
 <%= view(Post::Show, @post) %>
+```
 
+```ruby
 ## controllers/posts_controller.rb
 class PostsController < ApplicationController
 
@@ -141,10 +149,14 @@ class PostsController < ApplicationController
   end
 
 end
+```
 
+```erb
 ## views/posts/new.html.erb
 <%= view(Post::Form, @post) %>
+```
 
+```ruby
 ## controllers/posts_controller.rb
 class PostsController < ApplicationController
 
@@ -153,7 +165,9 @@ class PostsController < ApplicationController
   end
 
 end
+```
 
+```erb
 ## views/posts/edit.html.erb
 <%= view(Post::Form, @post) %>
 
