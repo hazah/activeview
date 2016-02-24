@@ -373,7 +373,7 @@ class Post::Presenter < ApplicationPresenter
   end
 
   def post_params
-    params[:post].permit view.post_params if params.has_key? :post
+    params[:post].permit *view.post_params if params.has_key? :post
   end
 
   helper_method :post, :post_params
