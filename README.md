@@ -260,9 +260,6 @@ Now that we have handed off our model to the view layer, it's time to take over 
 class Post::Show < ActiveView::Base
   ## Lets show of some features...
 
-  ## Give our passed in object a proper name
-  view_for :post
-
   # helper methods
   def header_tag
     # The implication is that this might be rendered from a different action/controller
