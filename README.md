@@ -166,8 +166,9 @@ class PostsController < ApplicationController
 
 end
 ```
- ## views/posts/edit.html.erb
+
 ```erb
+## views/posts/edit.html.erb
 <%= view(Post::Form, @post) %>
 ```
 
@@ -224,8 +225,29 @@ end
 
 Now that we have handed off our model to the view layer, it's time to take over rendering.
 
-```erb
+```ruby
+## actions/models/show.rb
+class Post::Show < ActiveView::Base
 
+  ## Lets show of some features...
+
+  # helper methods
+  def header_tag
+    params[:controller] == 'posts' && params[:action] == 'show' ? :h1 : :h2
+  end
+
+  # access to the object's attributes.
+  attr_helper :title, :body
+end
+
+```
+
+```erb
+## actions/views/post/show.rb
+<%= div_for post do %>
+  <%= content_tag header_tag, title %>
+  <p><%= body %></p>
+<% end %>
 ```
 
 # Emergent patterns
