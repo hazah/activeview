@@ -5,6 +5,7 @@ require 'active_view/rails/engine/configuration'
 require 'active_view/rails/engine'
 require 'active_view/rails/action_view/helpers/rendering_helper'
 require 'active_view/rails/action_view/renderer/renderer'
+require 'active_view/rails/action_controller/base'
 
 require 'active_view/engine'
 

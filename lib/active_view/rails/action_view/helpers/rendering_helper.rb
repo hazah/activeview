@@ -13,7 +13,7 @@ module ActionView
           end
         else
           if options < ActiveView::Base
-            view_renderer.render_view(self, options, controller, locals, &block)
+            view_renderer.render_view(self, :view => options, , :locals => locals)
           else
             view_renderer.render_partial(self, :partial => options, :locals => locals)
           end

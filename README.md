@@ -145,7 +145,7 @@ end
 
 ```ruby
 
-## views/posts/new.html.erb
+## views/posts/show.html.erb
 <%= view(Post::Show, @post) %>
 
 ```
@@ -193,13 +193,12 @@ end
 
 ```
 
+Note that the following actions render the form directly. This is because it is a view.
+Therefore, we do not need a template to handle this action!
+Note, also, that we are not passing parameters around. Since we've handed off the
+model to a view, the parameters will still be available in that context.
+
 ```ruby
-
-## Note that the following actions render the form directly. This is because it is a view.
-## Therefore, we do not need a template to handle this action!
-## Note, also, that we are not passing parameters around. Since we've handed off the
-## model to a view, the parameters will still be available in that context.
-
 
 ## controllers/posts_controller.rb
 
@@ -470,6 +469,9 @@ The implementation of `ActiveView::Presenter`:
 
 ```ruby
 
+around_action :validate, :set_valid
+after_action :create, :update, :set_submitted
+
 def populate?
   # Only populate if the calling controller matches the intended resources.
   # Otherwise the assumption is that the object was populated by
@@ -497,6 +499,16 @@ end
 
 def submitted?
   @_submitted ||= false
+end
+
+private
+
+def set_valid
+  @_valid = yield
+end
+
+def set_submitted
+  @_submitted = true
 end
 
 ```

@@ -52,21 +52,34 @@ module ActiveView
       @_view_renderer ||= ActionView::Renderer.new(lookup_context)
     end
 
+    def renderer_for_action_or_partial
+      @_renderer_for_action_or_partial ||= begin
+        view_paths = self.class._view_paths
+        view_paths = view_paths + controller.class._view_paths unless controller.nil?
+        new_lookup_context = ActionView::LookupContext.new(view_paths , details_for_lookup, _prefixes)
+        renderer_for_action_or_partial = ActionView::Renderer.new(new_lookup_context)
+      end
+    end
+
+    def view(view_class, *args, &block)
+      view_class.view_context_class(controller).new(self, controller, *args, &block)
+    end
+
     # Overrides the main helper so that global templates can make use of the
     # controllers lookup_context if one is available and fallback to own if not.
     def render(options = {}, locals = {}, &block)
       case options
       when Hash
         if block_given?
-          (try(:controller) || self).view_renderer.render_partial(self, options.merge(:partial => options[:layout]), &block)
+          renderer_for_action_or_partial.view_renderer.render_partial(self, options.merge(:partial => options[:layout]), &block)
         else
-          (try(:controller) || self).view_renderer.render(self, options)
+          renderer_for_action_or_partial.view_renderer.render(self, options)
         end
       else
-        if options < ActiveView::Base
-          view_renderer.render_view(self, options, controller, locals, &block)
+        if options.is_a? ActiveView::Base
+          view_renderer.render_view(self, :view => options, , :locals => locals)
         else
-          (try(:controller) || self).view_renderer.render_partial(self, :partial => options, :locals => locals)
+          renderer_for_action_or_partial.view_renderer.render_partial(self, :partial => options, :locals => locals)
         end
       end
     end

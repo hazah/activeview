@@ -9,14 +9,11 @@ module ActiveView
     before_action :show, :run_block
     after_action :show, :set_assigns
 
-    around_action :validate, :set_valid
-    around_action :create, :update, :set_submitted
-
     abstract!
 
     class << self
       def internal_methods
-        superclass.internal_methods - [:show, :populate, :validate, :create, :update, :destroy] # TODO: remove once implicit actions are available.
+        superclass.internal_methods - [:show] # TODO: remove once implicit actions are available.
       end
     end
 
@@ -43,66 +40,11 @@ module ActiveView
     def show
     end
 
-    # TODO: Remove in favour of an implicit action call
-    def populate
-    end
-
-    # TODO: Remove in favour of an implicit action call
-    def validate
-    end
-
-    # TODO: Remove in favour of an implicit action call
-    def create
-    end
-
-    # TODO: Remove in favour of an implicit action call
-    def update
-    end
-
-    # TODO: Remove in favour of an implicit action call
-    def destroy
-    end
-
-    ## Public API
-
-    def populate?
-      # Only populate if the calling controller matches the intended resources.
-      # Otherwise the assumption is that the object was populated by
-      # accepts_nested_attributes_for.
-      validate? && params[:controller].singularize == view.view_path.rpartition('/').first
-    end
-
-    def validate?
-      [:create, :update].include? params[:action]
-    end
-
-    def submit?
-      should_submit = [:create, :update, :destroy].include? params[:action]
-      should_submit = should_submit && valid? if validate?
-      should_submit
-    end
-
-    def operation
-      params[:action]
-    end
-
-    def valid?
-      @_valid ||= false
-    end
-
-    def submitted?
-      @_submitted ||= false
-    end
-
     def block_content
       @_block_content ||= nil
     end
 
     helper_method :block_content
-
-    def setup_parent
-      view.parent.presenter.setup_parent_params(self) if view.parent.present?
-    end
 
     # The default implementation simply yields the model for manipulation before
     # rendering.
@@ -129,14 +71,6 @@ module ActiveView
         hash[name.slice(1, name.length)] = instance_variable_get(name)
       }
       assign(variables)
-    end
-
-    def set_valid
-      @_valid = yield
-    end
-
-    def set_submitted
-      @_submitted = yield
     end
 
     DEFAULT_PROTECTED_INSTANCE_VARIABLES = Set.new %w(
