@@ -370,10 +370,6 @@ class Post::Presenter < ApplicationPresenter
 
   private
 
-  def post
-    view.object
-  end
-
   def post_params
     params[:post].permit *view.post_params if params.has_key? :post
   end
