@@ -43,7 +43,7 @@ module ActionView
     def submit?
       should_submit = [:create, :update, :destroy].include? params[:action]
       should_submit = should_submit && valid? if validate?
-      should_submit
+      should_submit && params[:controller].singularize == view.view_path.rpartition('/').first
     end
 
     def operation
