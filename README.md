@@ -259,6 +259,9 @@ Now that we have handed off our model to the view layer, it's time to take over 
 class Post::Show < ActiveView::Base
   ## Lets show off some features...
 
+  # Signal that this is a resource view
+  resource
+
   # helper methods
   def header_tag
     # The implication is that this might be rendered from a different action/controller
