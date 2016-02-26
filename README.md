@@ -328,7 +328,7 @@ And now, the moment of truth, the actual rendering of the views!
 
 ## actions/views/post/show.rb
 
-<%= div_for post do %>
+<%= div_for @post do %>
 
   <%= unless current_page?(:index) || params[:controller] != 'posts' %>
     <%= content_tag :div, class: 'back-link' %>
