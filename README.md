@@ -587,6 +587,9 @@ end
 
 <% end %>
 
+```
+```ruby
+
 ## the outside world
 
 class PostController < ApplicationController
