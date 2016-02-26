@@ -597,11 +597,12 @@ class PostController < ApplicationController
 
     @view.title = @post.title
     @view.body = @post.body
+
+    # look, no action template!
+    render @view
   end
 
 end
-
-<%= render @view %>
 
 ```
 
