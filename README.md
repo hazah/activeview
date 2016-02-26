@@ -221,9 +221,9 @@ on the presenters.
 Presenter actions, like controller actions, are used to retrieve
 data from the model layer and the view layer (as created by the Rails environment).
 However, one can execute commands on a view from any context exept models and
-presenters themselves. This means that we can make use of the request information
-as well as the command sequence that gets executed along with the data that is
-passed in to these commands.
+presenters themselves (they cannot create views). This means that we can make use
+of the request information as well as the command sequence that gets executed along
+with the data that is passed in to these commands.
 
 ```ruby
 
