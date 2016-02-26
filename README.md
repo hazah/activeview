@@ -122,27 +122,27 @@ class PostsController < ApplicationController
   def index
     @posts = Post.all
     @view = view(Post::Show)
-    @view.populate!(@posts)
+    @view.populate(@posts)
   end
 
   def show
     @post = Post.find params[:id]
     @view = view(Post::Show)
-    @view.populate!(@post)
+    @view.populate(@post)
   end
 
   def new
     @post = Post.new
     @form = view(Post::Form)
 
-    @form.populate!(@post)
+    @form.populate(@post)
   end
 
   def edit
     @post = Post.find params[:id]
     @form = view(Post::Form)
 
-    @form.populate!(@post)
+    @form.populate(@post)
   end
 
   # Note that the following actions render the form directly. This is because it is a view.
