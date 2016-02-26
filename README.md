@@ -147,9 +147,6 @@ class PostsController < ApplicationController
     @form.populate(@post)
   end
 
-  # Note that the following actions render the form directly. This is because it is a view.
-  # Therefore, we do not need a template to handle this action!
-
   def create
     @post = Post.build
     @form = view(Post::Form)
@@ -161,7 +158,7 @@ class PostsController < ApplicationController
     if @form.submitted?
       redirect_to @post
     else
-      render @form
+      render :new
     end
   end
 
@@ -176,7 +173,7 @@ class PostsController < ApplicationController
     if @form.submitted?
       redirect_to @post
     else
-      render @form
+      render :edit
     end
   end
 
