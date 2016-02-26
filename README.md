@@ -485,7 +485,7 @@ end
 
 ## _Services_
 
-Taking advantage of the presenter, when one creates a view anside of a controller'a action
+Taking advantage of the presenter, when one creates a view inside of a controller'a action
 it's possible to make use of the callback mechanism and the actions of the presenter to
 execute various operations. This is essentially how the form submission mechanism works
 for the standard resource oriented application using Active View.
