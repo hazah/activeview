@@ -420,7 +420,7 @@ that once we obtain a view object, we can collect rendered information in an arb
 
 ```ruby
 
-def show
+def refresh_link_to_self
   @post = Post.find params[:id]
   @view = view(Post::Show)
   @view.populate @post
