@@ -424,14 +424,14 @@ that once we obtain a view object, we can collect rendered information in an arb
 
 ```ruby
 
-def refresh_link_to_self
+def flashy_show
   @post = Post.find params[:id]
   @view = view(Post::Show)
   @view.populate @post
 
-  @post.update_attributes link_to_self: @view.post_link
+  flash.now[:link_to_self] = @view.post_link
 end
-
+<%= flash[:link_to_self] %>
 <%= @view.index_link %>
 
 ```
