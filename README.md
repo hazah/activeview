@@ -429,7 +429,8 @@ def flashy_show
   @view = view(Post::Show)
   @view.populate @post
 
-  flash.now[:link_to_self] = @view.post_link
+  flash[:link_to_self] = @view.post_link
+  redirect_to :show
 end
 <%= flash[:link_to_self] %>
 <%= @view.index_link %>
