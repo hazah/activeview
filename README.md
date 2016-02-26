@@ -511,7 +511,7 @@ and add some custom state, the possibilities of the resulted output are probably
 generic, extensible themeing components or any other purely renderable structure.
 
 ```ruby
-<%= render @posts, :striped, :hover do |table| %>
+<%= render view(Bootstrap::Table), @posts, :striped, :hover do |table| %>
   <%= table.column :id, header: '#' %>
   <%= table.column :title %>
   <%= table.timestampts %>
