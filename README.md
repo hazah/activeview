@@ -449,9 +449,16 @@ an update action where you would like to save some markup to the database. Curre
 solutions to this issue are essentially _antipatterns_ that deliberately break
 abstraction boundries. One one end of the spectrum we have this functionality brought
 directly either into the controller or model. In terms of separation of concerns, we
-end up with "swiss cheese". By contrast, having a view to pass around as a variable
-we gain all of that functionality from a well defined interface that is the proper
-abstraction -- the view.
+end up with "swiss cheese". On the other end of that spectrum we have additional
+abstraction layers that bring about their own patters for separating concerns forcing
+us to facilitate generic pattern translations and also adaptations for special cases.
+
+By contrast, having a standard view, derived from Action View to pass around as a
+variable embued with the same functionality means that not only are we leaving all
+rendering concerns to the view layer where they belong, it also means that we gain
+all of that functionality from a well defined interface without actually adding any
+more layers. Even the MVP abstractions themselves serve the same concerns as the
+MVC ones with the difference being in their arrangements.
 
 
 ```ruby
