@@ -1,12 +1,10 @@
 require 'action_view/base'
-require 'active_model/model'
+require 'active_model/callbacks'
 require 'active_support'
 
 module ActiveView
   class Base < ActionView::Base
-    include ActiveModel::Model
-    include ActiveModel::AttributeMethods
-    include ActiveModel::Validations
+    include ActiveModel::Callbacks
 
     include Rendering
 
@@ -33,8 +31,8 @@ module ActiveView
         end
 
         # Determine the presenter class that will manipulate this view.
-        unless klass.instance_variable_defined?(:@presenter)
-          klass.instance_variable_set(:@presenter, ("#{klass.view_path.camelize.deconstantize}::Presenter".constantize rescue ActiveView::Presenter))
+        unless klass.instance_variable_defined?(:@_presenter)
+          klass.instance_variable_set(:@_presenter, ("#{klass.view_path.camelize.deconstantize}::Presenter".constantize rescue ActiveView::Presenter))
         end
 
         super
@@ -51,74 +49,58 @@ module ActiveView
       end
 
       def attr_helper(*names)
-        delegate *names, to: :object
+        attr_accessor *names
         define_attribute_methods *names
       end
     end
 
     attribute_method_suffix '='
 
-    def attribute=(attr, value)
-      object.send("#{attr}=", value)
-    end
-
     # Delegates to the class' #view_path
     def view_path
       self.class.view_path
     end
 
-    def presenter
-      @presenter ||= self.class.presenter.new(self, block)
-    end
-
     abstract!
 
+    def presenter
+      @_presenter
+    end
+
     attr_internal :parent
-
-    attr_internal :object
-    delegate :attributes, to: :object
-
-    delegate :process, to: :presenter
-
     attr_internal :block
-    attr_internal :options
 
     define_model_callbacks :initialize
 
-    def initialize(parent = nil, controller = nil, object = {}, options = {}, &block)
-      run_callbacks :initialize do
-        @_config = ActiveSupport::InheritableOptions.new
+    def initialize(parent = nil, controller = nil, options = {}, &block)
+      @_config = ActiveSupport::InheritableOptions.new
 
-        assign_controller(controller)
-        _prepare_context
+      assign_controller(controller)
+      _prepare_context
 
-        @_parent = parent
-        @_object = object.is_a?(Hash) ? AttributeWrapper.new(object) : object
-        @_block = block if block_given?
-        @_options = options
-      end
+      @_parent = parent
+      @_presenter = self.class.presenter.new(self, options, block)
+
+      run_callbacks :initialize
     end
 
-    after_initialize { |view| view.process(:show) }
-
-    def to_model
-      object.respond_to?(:to_model) ? object.to_model : self
-    end
-
-    def model_class
-      model_name_from_record_or_class(self).name.constantize
-    end
+    after_initialize { |view| view.presenter.initialize_view! }
 
     ## Allows other systems, such as authorization, to block rendering
-    define_model_callbacks :renderable
+    define_model_callbacks :populate,
+    define_model_callbacks :renderable, only: :before
 
-    def renderable?
-      run_callbacks :renderable do
-        true
+    delegate :populate!, to: :presenter
+
+    def populate(*args, &block)
+      run_callbacks :populate do
+        populate! *args, &block
       end
     end
 
-    AttributeWrapper = Struct.new(:attributes)
+    def renderable?
+      run_callbacks :renderable || true
+    end
 
     ActiveSupport.run_load_hooks(:active_view, self)
   end

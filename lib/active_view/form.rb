@@ -4,7 +4,7 @@ module ActiveView
 
     def inherited(klass) # :nodoc:
       super
-      presenter = klass.instance_variable_get(:@presenter)
+      presenter = klass.instance_variable_get(:@_presenter)
       presenter = Class.new(presenter) do
         define_singleton_method :name do
           presenter.name
@@ -12,14 +12,25 @@ module ActiveView
         include FormPresenter
       end
 
-      klass.instance_variable_set(:@presenter, presenter)
+      klass.instance_variable_set(:@_presenter, presenter)
     end
 
-    after_initialize { |view| view.process(:populate) if view.populate? }
-    after_initialize { |view| view.process(:validate) if view.validate? }
-    after_initialize { |view| view.process(operation) if view.submit?   }
+    delegate :valid?, :submitted?, to: :presenter
+    delegate :validate!, :submit!, to: :presenter
 
-    delegate :populate?, :validate?, :submit?, :valid?, :submitted?, :operation, to: :presenter
+    define_model_callbacks :validate, :submit
+
+    def validate
+      run_callbacks :validate do
+        validate!
+      end
+    end
+
+    def submit
+      run_callbacks :submit do
+        submit!
+      end
+    end
 
     ActiveSupport.run_load_hooks(:active_view_form, self)
   end

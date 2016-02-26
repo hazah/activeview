@@ -4,7 +4,7 @@ module ActionView
 
     included do
       around_action :validate, :set_valid
-      after_action :create, :update, :set_submitted
+      after_action :submit, :set_submitted
     end
 
     # TODO: Remove in favour of an implicit action call
@@ -16,38 +16,22 @@ module ActionView
     end
 
     # TODO: Remove in favour of an implicit action call
-    def create
-    end
-
-    # TODO: Remove in favour of an implicit action call
-    def update
-    end
-
-    # TODO: Remove in favour of an implicit action call
-    def destroy
+    def submit
     end
 
     ## Public API
 
-    def populate?
-      # Only populate if the calling controller matches the intended resources.
-      # Otherwise the assumption is that the object was populated by
-      # accepts_nested_attributes_for.
-      validate? && params[:controller].singularize == view.view_path.rpartition('/').first
+    def populate!(*args, &block)
+      action_params = { args: args, block: block }
+      process(:populate)
     end
 
-    def validate?
-      [:create, :update].include? params[:action]
+    def validate!
+      process(:validate)
     end
 
-    def submit?
-      should_submit = [:create, :update, :destroy].include? params[:action]
-      should_submit = should_submit && valid? if validate?
-      should_submit && params[:controller].singularize == view.view_path.rpartition('/').first
-    end
-
-    def operation
-      params[:action]
+    def submit!
+      process(:submit)
     end
 
     def valid?
@@ -70,7 +54,7 @@ module ActionView
 
     module ClassMethods
       def internal_methods
-        super - [:populate, :validate, :create, :update, :destroy] # TODO: remove once implicit actions are available.
+        super - [:populate, :validate, :submit] # TODO: remove once implicit actions are available.
       end
     end
   end

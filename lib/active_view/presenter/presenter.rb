@@ -13,13 +13,13 @@ module ActiveView
 
     class << self
       def internal_methods
-        superclass.internal_methods - [:show] # TODO: remove once implicit actions are available.
+        superclass.internal_methods - [:initialize_view] # TODO: remove once implicit actions are available.
       end
     end
 
     attr_internal :view
-    delegate :session, :params, :options, to: :view
-    delegate :assign, to: :view
+    delegate :controller, to: :view
+    delegate :session, :params, :cookies, :flash to: :view
 
     # capture calls are set on the parent view, where the blocks are actually defined.
     delegate :capture, to: 'view.parent'
@@ -28,8 +28,11 @@ module ActiveView
     # used for very complex configuration strategy.
     attr_internal :block
 
-    def initialize(view, block)
+    attr_internal :action_params
+
+    def initialize(view, options, block)
       @_view = view
+      @_options = options
       @_block = block
     end
 
@@ -37,7 +40,20 @@ module ActiveView
     ## are to be implemented by subclasses.
 
     # TODO: Remove in favour of an implicit action call
-    def show
+    def initialize_view(*args, &block)
+    end
+
+    private
+
+    def initialize_view!(*args, &block)
+      action_params = { args: args, block: block }
+      process(:initialize_view)
+    end
+
+    ## adds blocks to the action calls.
+    def process_action(method_name, *args)
+      args = args + action_params[:args]
+      super(method_name, *args, &action_params[:block])
     end
 
     def block_content
@@ -51,7 +67,7 @@ module ActiveView
     def run_block
       @_block_content = nil
       unless block.blank?
-        @_block_content =  if view.parent.present?
+        @_block_content = if view.parent.present?
                             capture(view, &block)
                           else
                             ## We've been called directly from a controller.
@@ -70,11 +86,11 @@ module ActiveView
       variables = variables.each_with_object({}) { |name, hash|
         hash[name.slice(1, name.length)] = instance_variable_get(name)
       }
-      assign(variables)
+      view.assign(variables)
     end
 
     DEFAULT_PROTECTED_INSTANCE_VARIABLES = Set.new %w(
-      @_action_name @_response_body @_parent_params
+      @_action_name @_response_body @_options
       @_block_content @_view @_block @_valid @_submitted
     ).map(&:to_sym)
 

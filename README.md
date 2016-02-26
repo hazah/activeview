@@ -105,11 +105,15 @@ end
 class ApplicationController < ActionController::Base
   private
 
-  def post_params
+  def permitted_post_params
     [:title, :body]
   end
 
-  helper_method :post_params
+  def post_params
+    params.require(:post).permit(permitted_post_params)
+  end
+
+  helper_method :permitted_post_params, :post_params
 end
 
 ## controllers/posts_controller.rb
@@ -117,140 +121,104 @@ class PostsController < ApplicationController
 
   def index
     @posts = Post.all
+    @view = view(Post::Show)
+    @view.populate!(@posts)
+  end
+
+  def show
+    @post = Post.find params[:id]
+    @view = view(Post::Show)
+    @view.populate!(@post)
+  end
+
+  def new
+    @post = Post.new
+    @form = view(Post::Form)
+
+    @form.populate!(@post)
+  end
+
+  def edit
+    @post = Post.find params[:id]
+    @form = view(Post::Form)
+
+    @form.populate!(@post)
+  end
+
+  # Note that the following actions render the form directly. This is because it is a view.
+  # Therefore, we do not need a template to handle this action!
+  # Note, also, that we are not passing parameters around. Since we've handed off the
+  # model to a view, the parameters will still be available in that context.
+
+  def create
+    @post = Post.build
+    @form = view(Post::Form)
+
+    @form.populate @post, post_params
+    @form.validate
+    @form.submit if @form.valid?
+
+    if @form.submitted?
+      redirect_to @post
+    else
+      render @form
+    end
+  end
+
+  def update
+    @post = Post.find(params[:id])
+    @form = view(Post::Form)
+
+    @form.populate @post, post_params
+    @form.validate
+    @form.submit if @form.valid?
+
+    if @form.submitted?
+      redirect_to @post
+    else
+      render @form
+    end
+  end
+
+  def destroy
+    @post = Post.find(params[:id])
+    @post.destroy
+
+    redirect_to Posts
   end
 
 end
 
 ```
+
+Though the action's primary templates' code shown here is as brief as possible,
+it is assumed to contain logic pertaining directly to the request being viewed.
+In a real world application, we can still assume typical use of helpers and other
+partials. In fact, this framework does not discourage standard Rails practices.
+
+Note that we render the `@view` or the `@form` instance variables.
 
 ```ruby
 
 ## views/posts/index.html.erb
-<%= view(Post::Show, @posts) %>
+<%= render @view %>
 
-```
-
-```ruby
-
-## controllers/posts_controller.rb
-
-class PostsController < ApplicationController
-
-  def show
-    @post = Post.find params[:id]
-  end
-
-end
-```
-
-```ruby
 
 ## views/posts/show.html.erb
-<%= view(Post::Show, @post) %>
+<%= render @view %>
 
-```
-
-```ruby
-
-## controllers/posts_controller.rb
-
-class PostsController < ApplicationController
-
-  def new
-    @post = Post.new
-  end
-
-end
-
-```
-
-```ruby
 
 ## views/posts/new.html.erb
-<%= view(Post::Form, @post) %>
+<%= render @form %>
 
-```
-
-```ruby
-
-## controllers/posts_controller.rb
-
-class PostsController < ApplicationController
-
-  def edit
-    @post = Post.find params[:id]
-  end
-
-end
-
-```
-
-```ruby
 
 ## views/posts/edit.html.erb
-
-<%= view(Post::Form, @post) %>
-
-```
-
-Note that the following actions render the form directly. This is because it is a view.
-Therefore, we do not need a template to handle this action!
-Note, also, that we are not passing parameters around. Since we've handed off the
-model to a view, the parameters will still be available in that context.
-
-```ruby
-
-## controllers/posts_controller.rb
-
-class PostsController < ApplicationController
-
-  def create
-    @form = view(Post::Form, Post.new)
-    if @form.submitted?
-      redirect_to @form.post
-    else
-      render @form
-    end
-  end
-
-end
-
-
-## controllers/posts_controller.rb
-
-class PostsController < ApplicationController
-
-  def update
-    @form = view(Post::Form, Post.find(params[:id]))
-    if @form.submitted?
-      redirect_to @form.post
-    else
-      render @form
-    end
-  end
-
-end
-
-
-## We still forward to the form for destroy operation.
-
-
-## controllers/posts_controller.rb
-
-class PostsController < ApplicationController
-
-  def destroy
-    @form = view(Post::Form, Post.find(params[:id]))
-    if @form.submitted?
-      redirect_to Posts
-    end
-  end
-end
-
+<%= render @form %>
 
 ```
 
-Now that we have handed off our model to the view layer, it's time to take over rendering.
+Now that we have handed off our model to the view layer, it's time to take over
+rendering, finally!
 
 ```ruby
 
@@ -258,9 +226,6 @@ Now that we have handed off our model to the view layer, it's time to take over 
 
 class Post::Show < ActiveView::Base
   ## Lets show off some features...
-
-  # Signal that this is a resource view
-  resource
 
   # helper methods
   def header_tag
@@ -279,117 +244,116 @@ class Post::Show < ActiveView::Base
     super(controller: :posts, action: action)
   end
 
-  # wrapper helpers work too!
+  # wrapper helpers!
   def post_link(action, link_content, destination, options={})
     link_to_unless(current_page?(action), content, destination, options) {}
   end
 
+  # and so on..
   def index_link
     post_link :index, model_name, Post
   end
 
   def show_link
-    post_link :show, title, post
+    post_link :show, title, @post
   end
 
   def new_link
-    post_link :new, t(:create, model: model_name.singularize), post
+    post_link :new, t(:create, model: model_name.singularize), @post
   end
 
   def edit_link
-    post_link :edit, t(:edit, model: title), edit_post(post)
+    post_link :edit, t(:edit, model: title), edit_post(@post)
   end
 
   def destroy_link
-    post_link :destroy, t(:destroy, model: title), post, method: :destroy
+    post_link :destroy, t(:destroy, model: title), @post, method: :destroy
   end
 
-  # access to the object's attributes directly as helpers as well.
-  attr_helper :title, :body
-
 end
-
-```
-
-```ruby
-
-## actions/views/post/show.rb
-
-<%= div_for post do %>
-  <div class="back-link"><%= index_link %></div>
-  <%= content_tag header_tag, title %>
-  <p><%= body %></p>
-  <ul class="links">
-    <li><%= edit_link %></li>
-    <li><%= destroy_link %></li>
-  </ul>
-<% end %>
-
-```
-
-```ruby
 
 # actions/models/post/form.rb
 
 class Post::Form < ActiveView::Form
-  # We declare all the input fields and their options which will be used
-  # to inform the form builder.
-  input :title, :body
+  # By default, the forms' presenter will contain
+  # basic form processing actions suitable for a
+  # scaffolded view.
 end
-
 
 ## actions/presenters/application_presenter.rb
 
 class ApplicationPresenter < ActiveView::Presenter
+  # This is the controller's cousin. it's job is to respond to the commands
+  # performed on the view and set it's state. It does so by manipulating models.
 end
 
 
 # actions/presenters/post_presenter.rb
 
 class Post::Presenter < ApplicationPresenter
-  # Standard form operations
-  def populate
-    post.assign_attributes post_params
+  # Map some attributes as helpers for the view.
+  attr_accessor :title, :body
+  helper_attr :title, :body
+
+  ## Standard form operations on resources. Each is implemented as an action
+  ## (similar to an ActionController action). Each of which can have before,
+  ## after, and around filters defined.
+
+  def populate(post)
+    @post = post
+    title = @post.title
+    body = @post.body
   end
 
   def validate
-    post.validate
+    @post.validate
   end
 
-  def create
-    post.save
+  def submit
+    @post.save
   end
 
-  def update
-    post.save
-  end
-
-  def destroy
-    post.destroy
-  end
-
-  private
-
-  def post_params
-    params[:post].permit *view.post_params if params.has_key? :post
-  end
-
-  helper_method :post, :post_params
 end
 
 ```
 
+And now, the moment of truth, the actual rendering of the views!
+
 ```ruby
+
+## actions/views/post/show.rb
+
+<%= div_for post do %>
+
+  <%= unless current_page?(:index) || params[:controller] != 'posts' %>
+    <%= content_tag :div, class: 'back-link' %>
+      <%= index_link %>
+    <% end %>
+  <% end %>
+
+  <%= content_tag header_tag, title %>
+
+  <div class="body">
+    <p><%= body %></p>
+  </div>
+
+  <ul class="links">
+    <li><%= edit_link %></li>
+    <li><%= destroy_link %></li>
+  </ul>
+
+<% end %>
 
 # actions/views/posts/form.html.erb
 
-<%= form_for post do |post_form| %>
-  <% if post.errors.any? %>
+<%= form_for @post do |form| %>
+
+  <% if @post.errors.any? %>
     <div id="error_explanation">
-      <h2><%= pluralize(post.errors.count, "error") %> prohibited this <%= model_name %> from being saved:</h2>
+      <h2><%= pluralize(@post.errors.count, "error") %> prohibited this <%= model_name %> from being saved:</h2>
 
       <ul>
-       <%= post.errors.full_messages.each do |message| %>
+       <%= @post.errors.full_messages.each do |message| %>
         <li><%%= message %></li>
        <% end %>
       </ul>
@@ -397,23 +361,43 @@ end
   <% end %>
 
   <div class="field">
-    <%= post_form.label :title %>
-    <%= post_form.input :title %>
+    <%= form.label :title %>
+    <%= form.input :title %>
   </div>
 
   <div class="field">
-    <%= post_form.label :body %>
-    <%= post_form.input :body %>
+    <%= form.label :body %>
+    <%= form.input :body %>
   </div>
 
   <div class="actions">
-    <%= post_form.submit %>
+    <%= form.submit %>
   </div>
+
 <% end %>
 
 ```
 
+At first glance it may seem that we've just pushed the logic down to another layer.
+In the case of a simple application such as this demonstration, this observation is
+justified.
 
+A second glance may be more revealing. For instance, note that while we technically
+added more lines of code to the actions of the controller, yet we are ultimately
+separating the concerns of the request with the concerns of that request's fulfilment.
+The controller responds to a request by acting on models and then binding them to
+views and rendering them. The view, on the other hand is responsible for properly
+setting itself up for the rendering of that response. That being the case, it's
+entierly possible that the rendering needs of the view are independent of the controller.
+This happens in applications where the rendering needs are primarily driven through
+user configuration.
+
+A very careful glance might make one ponder "what happened to the index action view
+template?" We simply didn't have to implement one. The interface to views is designed
+to keep to the familiar pattern of rendering partials from within templates. This means
+we can render collections of objects using a simple expression. Thus, we retain the Rails
+interface where from the perspective of the template itself, it is simply rendering
+various objects.
 
 # Emergent patterns
 
@@ -422,17 +406,26 @@ they are enabled by the framework, how they may be applied warrants a closer inv
 
 ## _Model Presenters_
 
-Mentioned above, is the ability for a view object to be treated as a model object by the
+Mentioned above, is the ability for a view object to be treated as variable by the
 outside world. This enables a pattern where this object is used to obtain formatted data
 suitable for rendering by querying the object directly. Since it is a true view, and is
 responsible for generating rendered content, the object's properties can used to generate
 rendered data from any conroller and by extention, view, context. Effectively this means
-that once we obtain a view object, we can collect rendered information in an arbitrary
-fashion.
+that once we obtain a view object, we can collect rendered information in an arbitrary way.
 
-### Examples
+```ruby
 
-TODO: Clarity through code...
+def show
+  @post = Post.find params[:id]
+  @view = view(Post::Show)
+  @view.populate
+
+  @post.update_attributes link_to_self: @view.post_link
+end
+
+<%= @view.index_link %>
+
+```
 
 ## _View Models_
 
@@ -449,68 +442,12 @@ TODO: Clarity through code...
 
 Taking advantage of the presenter, when one returns a view as a response to an action it's
 possible to make use of the callback mechanism and the actions of the presenter to execute
-various operations. This is essentially how the form submission mechanism works in the
+various operations. This is essentially how the form submission mechanism works for the
 standard resource oriented application using Active View.
 
-The command sequence for the form looks like this:
+### Examples
 
-```ruby
-
-after_initialize { |view| process(:populate) if populate? }
-after_initialize { |view| process(:validate) if validate? }
-after_initialize { |view| process(operation) if submit?   }
-
-delegate :populate?, :validate?, :submit?, :valid?, :submitted?, :operation, to: :presenter
-
-```
-
-The implementation of `ActiveView::Presenter`:
-
-```ruby
-
-around_action :validate, :set_valid
-after_action :create, :update, :set_submitted
-
-def populate?
-  # Only populate if the calling controller matches the intended resources.
-  # Otherwise the assumption is that the object was populated by
-  # accepts_nested_attributes_for.
-  validate? && params[:controller].singularize == view.view_path.rpartition('/').first
-end
-
-def validate?
-  [:create, :update].include? params[:action]
-end
-
-def submit?
-  should_submit = [:create, :update, :destroy].include? params[:action]
-  should_submit = should_submit && valid? if validate?
-  should_submit && params[:controller].singularize == view.view_path.rpartition('/').first
-end
-
-def operation
-  params[:action]
-end
-
-def valid?
-  @_valid ||= false
-end
-
-def submitted?
-  @_submitted ||= false
-end
-
-private
-
-def set_valid
-  @_valid = yield
-end
-
-def set_submitted
-  @_submitted = true
-end
-
-```
+TODO: Clarity through code...
 
 ## _Builders_
 
@@ -520,6 +457,14 @@ view to execute actions on the presenter, take advantage of layouts and collecti
 and add some custom state, the possibilities of the resulted output are probably endless for
 generic, extensible themeing components or any other purely renderable structure.
 
-### Examples
+```ruby
 
-TODO: Clarity through code...
+## bootstrap_table is a wrapper returning a view object:
+
+<%= bootstrap_table @posts, :striped, :hover do |table| %>
+  <%= table.column :id, header: '#' %>
+  <%= table.column :title %>
+  <%= table.timestampts %>
+  <%= table.actions %>
+<% end %>
+```
