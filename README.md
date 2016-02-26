@@ -436,12 +436,47 @@ end
 
 At the most basic level, the presenter does only what is conventional of a typical rails
 action. Presenters treat the external controller actions as context information from which
-to derive their state. This means that without any further extension to the presenter, the
-view simply acts as a simple binder for the rendering template.
+to derive their state. But, by desigin, which actions are called is left up to the context
+within which the view is used. If we reserve the presenter for only defining helper
+attributes and helpers, and direct view helpers, we have a an object that acts as a data
+binder for the associated template. Since we have an option of using the view as an object,
+we can set the attributes, and call the methods created on the view directly. Unlike
+presenter actions, the intention here is direct binding of data, thus, we only deal with
+rendering concerns.
 
-### Examples
+```ruby
 
-TODO: Clarity through code...
+## the view acts as the binder object
+class Post::ViewModel
+end
+
+## the presenter is used to define attributes for the view
+class Post::Presenter
+  helper_attr :title, :body
+end
+
+## the template
+
+<h1><%= title %></h1>
+<p><%= body %></p>
+
+## the outside world
+
+class PostController < ApplicationController
+
+  def show
+    @post = Post.find params[:id]
+    @view = view(Post::ViewModel)
+
+    @view.title = @post.title
+    @view.body = @post.body
+  end
+
+end
+
+<%= render @view %>
+
+```
 
 ## _Services_
 
