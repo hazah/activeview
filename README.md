@@ -214,8 +214,16 @@ Note that we render the `@view` or the `@form` instance variables.
 
 ```
 
-Now that we have handed off our model to the view layer, it's time to take over
-rendering, finally!
+Now that we have handed off our model to the view layer of the MVP framework, it's
+time to take over the rendering logic, finally! To do this we implement actions
+on the presenters.
+
+Presenter actions, like controller actions, are used to retrieve
+data from the model layer and the view layer (as created by the Rails environment).
+However, one can execute commands on a view from any context exept models and
+presenters themselves. This means that we can make use of the request information
+as well as the command sequence that gets executed along with the data that is
+passed in to these commands.
 
 ```ruby
 
