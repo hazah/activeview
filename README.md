@@ -511,10 +511,7 @@ and add some custom state, the possibilities of the resulted output are probably
 generic, extensible themeing components or any other purely renderable structure.
 
 ```ruby
-
-## bootstrap_table is a wrapper rendering a view object:
-
-<%= bootstrap_table @posts, :striped, :hover do |table| %>
+<%= render @posts, :striped, :hover do |table| %>
   <%= table.column :id, header: '#' %>
   <%= table.column :title %>
   <%= table.timestampts %>
