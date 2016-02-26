@@ -122,12 +122,14 @@ class PostsController < ApplicationController
   def index
     @posts = Post.all
     @view = view(Post::Show)
+
     @view.populate(@posts)
   end
 
   def show
     @post = Post.find params[:id]
     @view = view(Post::Show)
+
     @view.populate(@post)
   end
 
@@ -147,8 +149,6 @@ class PostsController < ApplicationController
 
   # Note that the following actions render the form directly. This is because it is a view.
   # Therefore, we do not need a template to handle this action!
-  # Note, also, that we are not passing parameters around. Since we've handed off the
-  # model to a view, the parameters will still be available in that context.
 
   def create
     @post = Post.build
