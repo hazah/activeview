@@ -433,7 +433,7 @@ def flashy_show
   redirect_to :show
 end
 
-# views/posts/flashy_show.html.erb
+# views/posts/show.html.erb
 
 <%= flash[:link_to_self] %>
 <%= @view.index_link %>
