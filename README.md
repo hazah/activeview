@@ -432,8 +432,65 @@ def flashy_show
   flash[:link_to_self] = @view.post_link
   redirect_to :show
 end
+
+# views/posts/flashy_show.html.erb
+
 <%= flash[:link_to_self] %>
 <%= @view.index_link %>
+
+```
+
+## _View Objects_
+
+Drawing on the example above, we can create a simple view object that isn't extended
+in any way. Once we create an instance of this object, we can pass it around and have
+access to all available rendering helpers! How can this be useful? Lets say you have
+an update action where you would like to save some markup to the database. Current
+solutions to this issue are essentially _antipatterns_ that deliberately break
+abstraction boundries. One one end of the spectrum we have this functionality brought
+directly either into the controller or model. In terms of separation of concerns, we
+end up with "swiss cheese". By contrast, having a view to pass around as a variable
+we gain all of that functionality from a well defined interface that is the proper
+abstraction -- the view.
+
+
+```ruby
+# models/post.rb
+def set_author_html(view, author)
+  author_html = "Written by #{view.content_tag :em, author.name}."
+end
+```
+
+Since we can add methods to our basic view class we can adopt it to a more generic
+interface, where any kind of `view` parameter can be passed in to this method as long
+as it supports that interface.
+
+In the following example `caching_view` may be an Active View instance, but it could
+very well be a view that generates JSON, XML or PDF. The actual limit is only set
+by the interface expected of the view objects themselves.
+
+```ruby
+
+# controllers/posts_controller.rb
+
+class PostsController < ApplicationController
+private
+  def generate_cached_html
+    generate_cached_content(view(Post::Show))
+  end
+
+  def generate_cached_xml
+    generate_cached_content(XmlBuilder.new(self))
+  end
+
+  def generate_cached_json
+    generate_cached_content(JsonBuilder.new(self))
+  end
+
+  def generate_cached_content(caching_view)
+    caching_view.cached_content_for_post(title, body)
+  end
+end
 
 ```
 
@@ -451,20 +508,77 @@ rendering concerns.
 
 ```ruby
 
-## the view acts as the binder object
+## The view acts as the main binder interface. Usually as a series of helpers.
+## For this example the same implementation as before is sufficient.
 class Post::ViewModel < ActiveView::Base
+
+  def header_tag
+    params[:controller] == 'posts' && params[:action] == 'show' ? :h1 : :h2
+  end
+
+  def model_name
+    Post.model_name.human
+  end
+
+  def current_page?(action)
+    super(controller: :posts, action: action)
+  end
+
+  def post_link(action, link_content, destination, options={})
+    link_to_unless(current_page?(action), content, destination, options) {}
+  end
+
+  def index_link
+    post_link :index, model_name, Post
+  end
+
+  def show_link
+    post_link :show, title, @post
+  end
+
+  def new_link
+    post_link :new, t(:create, model: model_name.singularize), @post
+  end
+
+  def edit_link
+    post_link :edit, t(:edit, model: title), edit_post(@post)
+  end
+
+  def destroy_link
+    post_link :destroy, t(:destroy, model: title), @post, method: :destroy
+  end
+
 end
 
-## the presenter is used to define attributes for the view
+## The presenter is implemented to only define helpers for the view that work out
+## the binding logic.
 class Post::Presenter < ApplicationPresenter
-  # we can define title and body to be synced up with a model
+  attr_accessor :title, :body
   helper_attr :title, :body
 end
 
-## the template
+## the template (looking curiously the same as before...)
 
-<h1><%= title %></h1>
-<p><%= body %></p>
+<%= div_for @post do %>
+
+  <%= unless current_page?(:index) || params[:controller] != 'posts' %>
+    <%= content_tag :div, class: 'back-link' %>
+      <%= index_link %>
+    <% end %>
+  <% end %>
+
+  <%= content_tag header_tag, title %>
+
+  <div class="body">
+    <p><%= body %></p>
+  </div>
+
+  <ul class="links">
+    <li><%= edit_link %></li>
+    <li><%= destroy_link %></li>
+  </ul>
+
+<% end %>
 
 ## the outside world
 
