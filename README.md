@@ -304,8 +304,12 @@ class Post::Presenter < ApplicationPresenter
   ## (similar to an ActionController action). Each of which can have before,
   ## after, and around filters defined.
 
-  def populate(post)
+  def populate(post, params = nil)
     @post = post
+
+    @post.assign_attributes params if params
+
+    # set the attributes so that they can be used
     title = @post.title
     body = @post.body
   end
