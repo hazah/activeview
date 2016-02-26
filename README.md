@@ -457,7 +457,7 @@ end
 
 ## the presenter is used to define attributes for the view
 class Post::Presenter < ApplicationPresenter
-  # we can define title and body to be synced up with the model
+  # we can define title and body to be synced up with a model
   helper_attr :title, :body
 end
 
