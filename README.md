@@ -392,7 +392,7 @@ In the case of a simple application such as this demonstration, this observation
 justified.
 
 A second glance may be more revealing. For instance, note that while we technically
-added more lines of code to the actions of the controller, yet we are ultimately
+added more lines of code to the actions of the controller, we are ultimately
 separating the concerns of the request with the concerns of that request's fulfilment.
 The controller responds to a request by acting on models and then binding them to
 views and rendering them. The view, on the other hand is responsible for properly
@@ -419,7 +419,7 @@ Mentioned above, is the ability for a view object to be treated as variable by t
 outside world. This enables a pattern where this object is used to obtain formatted data
 suitable for rendering by querying the object directly. Since it is a true view, and is
 responsible for generating rendered content, the object's properties can used to generate
-rendered data from any conroller and by extention, view, context. Effectively this means
+rendered data from any controller and by extention, view, context. Effectively this means
 that once we obtain a view object, we can collect rendered information in an arbitrary way.
 
 ```ruby
@@ -440,7 +440,7 @@ end
 
 At the most basic level, the presenter does only what is conventional of a typical rails
 action. Presenters treat the external controller actions as context information from which
-to derive their state. But, by desigin, which actions are called is left up to the context
+to derive their state. But, by design, which actions are called is left up to the context
 within which the view is used. If we reserve the presenter for only defining helper
 attributes and helpers, and direct view helpers, we have a an object that acts as a data
 binder for the associated template. Since we have an option of using the view as an object,
@@ -451,11 +451,12 @@ rendering concerns.
 ```ruby
 
 ## the view acts as the binder object
-class Post::ViewModel
+class Post::ViewModel < ActiveView::Base
 end
 
 ## the presenter is used to define attributes for the view
-class Post::Presenter
+class Post::Presenter < ApplicationPresenter
+  attr_accessor :title, :body
   helper_attr :title, :body
 end
 
@@ -484,10 +485,10 @@ end
 
 ## _Services_
 
-Taking advantage of the presenter, when one returns a view as a response to an action it's
-possible to make use of the callback mechanism and the actions of the presenter to execute
-various operations. This is essentially how the form submission mechanism works for the
-standard resource oriented application using Active View.
+Taking advantage of the presenter, when one creates a view anside of a controller'a action
+it's possible to make use of the callback mechanism and the actions of the presenter to
+execute various operations. This is essentially how the form submission mechanism works
+for the standard resource oriented application using Active View.
 
 ```ruby
 
@@ -510,7 +511,7 @@ generic, extensible themeing components or any other purely renderable structure
 
 ```ruby
 
-## bootstrap_table is a wrapper returning a view object:
+## bootstrap_table is a wrapper rendering a view object:
 
 <%= bootstrap_table @posts, :striped, :hover do |table| %>
   <%= table.column :id, header: '#' %>
