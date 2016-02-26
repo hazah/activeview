@@ -450,10 +450,17 @@ possible to make use of the callback mechanism and the actions of the presenter 
 various operations. This is essentially how the form submission mechanism works for the
 standard resource oriented application using Active View.
 
-### Examples
+```ruby
 
-TODO: Clarity through code...
+@form = view(Post::Form)
 
+@form.populate @post, post_params
+@form.validate
+@form.submit if @form.valid?
+
+success =  @form.submitted?
+
+```
 ## _Builders_
 
 When you override the object that is passed into the block sent with the call to `render` to
