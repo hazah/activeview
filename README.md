@@ -596,13 +596,12 @@ class PostController < ApplicationController
 
   def show
     @post = Post.find params[:id]
-    @view = view(Post::ViewModel)
 
-    @view.title = @post.title
-    @view.body = @post.body
-
-    # look, no action template!
-    render @view
+    # We can render views directly from an action.
+    render Post::ViewModel do |view|
+      view.title = @post.title
+      view.body = @post.body
+    end
   end
 
 end
