@@ -57,6 +57,7 @@ module ActiveView
         view_paths = self.class._view_paths
         view_paths = view_paths + controller.class._view_paths unless controller.nil?
         new_lookup_context = ActionView::LookupContext.new(view_paths , details_for_lookup, _prefixes)
+        new_lookup_context.rendered_format = lookup_context.rendered_format
         renderer_for_action_or_partial = ActionView::Renderer.new(new_lookup_context)
       end
     end
@@ -68,6 +69,11 @@ module ActiveView
     # Overrides the main helper so that global templates can make use of the
     # controllers lookup_context if one is available and fallback to own if not.
     def render(options = {}, locals = {}, &block)
+      if options.is_a?(Class) && options < ActiveView::Base
+        args = locals.delete(:args) || []
+        options = view(options, *args, &block)
+      end
+
       case options
       when Hash
         if block_given?
