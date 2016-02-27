@@ -9,7 +9,7 @@ class Post::Show < ActiveView::Base
 
   def current_page?(action)
     options = { controller: 'posts', action: action }
-    options[:id] = @post.id unless @post.nil?
+    options[:id] = @post.id unless @post.nil? || action == :index
     super(options)
   end
 
