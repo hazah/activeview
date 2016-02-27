@@ -13,7 +13,7 @@ module ActiveView
 
         base = self
 
-        presenter_helpers = base.presenter.respond_to(:_helpers) && base.presenter._helpers
+        presenter_helpers = base.presenter.respond_to?(:_helpers) && base.presenter._helpers
 
         Class.new(base) do
           if routes
@@ -27,7 +27,7 @@ module ActiveView
 
           if presenter_helpers
             include presenter_helpers
-          end
+         end
 
           self._view_paths = base._view_paths
 
@@ -53,6 +53,8 @@ module ActiveView
     end
 
     def renderer_for_action_or_partial
+      return view_renderer unless controller.present?
+
       @_renderer_for_action_or_partial ||= begin
         view_paths = self.class._view_paths
         view_paths = view_paths + controller.class._view_paths unless controller.nil?
@@ -63,7 +65,10 @@ module ActiveView
     end
 
     def view(view_class, *args, &block)
-      view_class.view_context_class(controller).new(self, controller, *args, &block)
+      view_class.view_context_class(controller.class).new(self, controller, *args, &block).tap do |view|
+        view.lookup_context.formats = [controller.format.to_sym]
+        view.lookup_context.rendered_format = view.lookup_context.formats.first
+      end
     end
 
     # Overrides the main helper so that global templates can make use of the
@@ -83,7 +88,7 @@ module ActiveView
         end
       else
         if options.is_a? ActiveView::Base
-          view_renderer.render_view(self, :view => options, , :locals => locals)
+          view_renderer.render_view(self, :view => options, :locals => locals)
         else
           renderer_for_action_or_partial.view_renderer.render_partial(self, :partial => options, :locals => locals)
         end

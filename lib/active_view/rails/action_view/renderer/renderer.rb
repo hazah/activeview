@@ -18,7 +18,7 @@ module ActiveView
         def render_view(context, options)
           view = options[:view]
 
-          ViewRenderer.new(view.lookup_context).render(view, view.options) if view.renderable?
+          ViewRenderer.new(view.lookup_context).render(view, view.presenter.options) if view.renderable?
         end
       end
     end

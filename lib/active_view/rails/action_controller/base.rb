@@ -7,7 +7,21 @@ module ActiveView
       extend ActiveSupport::Concern
 
       def view(view_class, *args, &block)
-        view_class.view_context_class(self).new(nil, self, *args, &block)
+        view_class.view_context_class(self.class).new(nil, self, *args, &block).tap do |view|
+          view.lookup_context.formats = [rendered_format.to_sym] if rendered_format
+          view.lookup_context.rendered_format = view.lookup_context.formats.first
+        end
+      end
+
+
+      def render(action=nil, options={}, &block) #:nodoc:
+        unless action.nil?
+          if action.is_a?(Class) && action < ActiveView::Base
+            args = locals.delete(:args) || []
+            options[:view] = view(options, *args, &block)
+          end
+        end
+        super
       end
 
       private
@@ -15,22 +29,10 @@ module ActiveView
       def _normalize_args(action=nil, options={})
         options = super(action, options)
 
-        if action.is_a? ActiveView::Base || (action.is_a?(Class) && action < ActiveView::Base)
-          if action.is_a?(Class)
-            args = options.delete(:args) || []
-            action = view(view, *args)
-          end
+        if action.is_a? ActiveView::Base
           options[:view] = action
         end
         options
-      end
-
-      def _process_format(format, options = {})
-        super
-
-        if options.has_key?(:view)
-          options[:view].lookup_context.formats = [format.to_sym]
-          options[:view].lookup_context.rendered_format = options[:view].lookup_context.formats.first
       end
 
     end
@@ -39,6 +41,6 @@ end
 
 module ActionController
   Base.class_eval do
-    include ActionView::Rails::ActionController
+    include ActiveView::Rails::ActionController
   end
 end

@@ -1,33 +1,27 @@
-class Post::Presenter < ActiveView::Presenter
-  before_action :show, :set_extra_var
+class PostPresenter < ActiveView::Presenter
+  #before_action :initialize_view, :set_extra_var
 
-  def populate
-    view.post.assign_attributes post_params
+  attr_accessor :title, :body
+  helper_attr :title, :body
+
+  def populate(post, params = nil)
+    @post = post
+
+    @post.assign_attributes params if params
+
+    self.title = @post.title
+    self.body = @post.body
   end
 
   def validate
-    view.post.valid?
+    @post.validate
   end
 
-  def create
-    view.post.save
-  end
-
-  def update
-    view.post.save
-  end
-
-  def destroy
-    view.post.destroy
+  def submit
+    @post.save
   end
 
   private
-
-  def post
-    view.object
-  end
-
-  helper_method :post
 
   def set_extra_var
     @extra_var = "Extra variable."

@@ -2,16 +2,17 @@ module ActiveView
   class Form < ActiveView::Base
     abstract!
 
-    def inherited(klass) # :nodoc:
+    def self.inherited(klass) # :nodoc:
       super
       presenter = klass.instance_variable_get(:@_presenter)
+
+      base = presenter
       presenter = Class.new(presenter) do
         define_singleton_method :name do
-          presenter.name
+          base.name
         end
-        include FormPresenter
+        include ActiveView::FormPresenter
       end
-
       klass.instance_variable_set(:@_presenter, presenter)
     end
 

@@ -4,7 +4,7 @@ require 'active_support'
 
 module ActiveView
   class Base < ActionView::Base
-    include ActiveModel::Callbacks
+    extend ActiveModel::Callbacks
 
     include Rendering
 
@@ -17,10 +17,10 @@ module ActiveView
         @abstract = true
       end
 
-      attr_reader :presenter
+      attr_internal_reader :presenter
 
       def presenter=(new_presenter)
-        @presenter = new_presenter
+        @_presenter = new_presenter
       end
 
       def inherited(klass) # :nodoc:
@@ -31,8 +31,8 @@ module ActiveView
         end
 
         # Determine the presenter class that will manipulate this view.
-        unless klass.instance_variable_defined?(:@_presenter)
-          klass.instance_variable_set(:@_presenter, ("#{klass.view_path.camelize.deconstantize}::Presenter".constantize rescue ActiveView::Presenter))
+        unless klass.instance_variable_defined?(:@_presenter) || klass == ActiveView::Form
+          klass.instance_variable_set(:@_presenter, ("#{klass.view_path.camelize.deconstantize}Presenter".constantize))
         end
 
         super
@@ -48,13 +48,7 @@ module ActiveView
         @view_path ||= anonymous? ? superclass.view_path : name.underscore
       end
 
-      def attr_helper(*names)
-        attr_accessor *names
-        define_attribute_methods *names
-      end
     end
-
-    attribute_method_suffix '='
 
     # Delegates to the class' #view_path
     def view_path
@@ -68,9 +62,8 @@ module ActiveView
     end
 
     attr_internal :parent
-    attr_internal :block
 
-    define_model_callbacks :initialize
+    define_model_callbacks :initialize, only: :after
 
     def initialize(parent = nil, controller = nil, options = {}, &block)
       @_config = ActiveSupport::InheritableOptions.new
@@ -86,9 +79,7 @@ module ActiveView
 
     after_initialize { |view| view.presenter.initialize_view! }
 
-    ## Allows other systems, such as authorization, to block rendering
-    define_model_callbacks :populate,
-    define_model_callbacks :renderable, only: :before
+    define_model_callbacks :populate
 
     delegate :populate!, to: :presenter
 
@@ -99,7 +90,7 @@ module ActiveView
     end
 
     def renderable?
-      run_callbacks :renderable || true
+      true
     end
 
     ActiveSupport.run_load_hooks(:active_view, self)

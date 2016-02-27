@@ -4,27 +4,44 @@ class PostsController < ApplicationController
   # GET /posts
   def index
     @posts = Post.all
+    @view = view(Post::Show)
+
+    @view.populate(@posts)
   end
 
   # GET /posts/1
   def show
+    @view = view(Post::Show)
+
+    @view.populate(@post)
   end
 
   # GET /posts/new
   def new
     @post = Post.new
+    @form = view(Post::Form)
+
+    @form.populate(@post)
   end
 
   # GET /posts/1/edit
   def edit
+    @form = view(Post::Form)
+
+    @form.populate(@post)
   end
 
   # POST /posts
   def create
-    @post = Post.new(post_params)
+    @post = Post.new
+    @form = view(Post::Form)
 
-    if @post.save
-      redirect_to @post, notice: 'Post was successfully created.'
+    @form.populate @post, post_params
+    @form.validate
+    @form.submit if @form.valid?
+
+    if @form.submitted?
+      redirect_to @post
     else
       render :new
     end
@@ -32,8 +49,14 @@ class PostsController < ApplicationController
 
   # PATCH/PUT /posts/1
   def update
-    if @post.update(post_params)
-      redirect_to @post, notice: 'Post was successfully updated.'
+    @form = view(Post::Form)
+
+    @form.populate @post, post_params
+    @form.validate
+    @form.submit if @form.valid?
+
+    if @form.submitted?
+      redirect_to @post
     else
       render :edit
     end

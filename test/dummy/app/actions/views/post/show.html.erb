@@ -1,17 +1,24 @@
 <p id="notice"><%= notice %></p>
 
-<p>
-  <strong>Title:</strong>
-  <%= title %>
-</p>
+<%= div_for @post do %>
 
-<p>
-  <strong>Body:</strong>
-  <%= body %>
-</p>
+  <% unless current_page?(:index) || params[:controller] != 'posts' %>
+    <%= content_tag :div, class: 'back-link' do %>
+      <%= index_link %>
+    <% end %>
+  <% end %>
 
-<%= edit_link %> |
-<%= back_link %>
+  <%= content_tag header_tag, title %>
+
+  <div class="body">
+    <p><%= body %></p>
+  </div>
+
+  <ul class="links">
+    <li><%= edit_link %></li>
+    <li><%= destroy_link %></li>
+  </ul>
+
+<% end %>
 
 <p><%= @block_content %></p>
-<p><%= @extra_var %></p>

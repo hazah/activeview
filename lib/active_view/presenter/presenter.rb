@@ -4,22 +4,28 @@ require 'abstract_controller/callbacks'
 module ActiveView
   class Presenter < AbstractController::Base
     include ActionController::Helpers
-    include AbstractController::Callbacks
-
-    before_action :show, :run_block
-    after_action :show, :set_assigns
+    extend ActiveModel::Callbacks
 
     abstract!
 
     class << self
-      def internal_methods
-        superclass.internal_methods - [:initialize_view] # TODO: remove once implicit actions are available.
+      def helper_method(*meths)
+        meths.flatten!
+        self._helper_methods += meths
+
+        meths.each do |meth|
+          _helpers.class_eval <<-ruby_eval, __FILE__, __LINE__ + 1
+            def #{meth}(*args, &blk)                               # def current_user(*args, &blk)
+              presenter.send(%(#{meth}), *args, &blk)             #    presenter.send(:current_user, *args, &blk)
+            end                                                    # end
+          ruby_eval
+        end
       end
     end
 
     attr_internal :view
     delegate :controller, to: :view
-    delegate :session, :params, :cookies, :flash to: :view
+    delegate :session, :params, :cookies, :flash, to: :view
 
     # capture calls are set on the parent view, where the blocks are actually defined.
     delegate :capture, to: 'view.parent'
@@ -27,6 +33,8 @@ module ActiveView
     # Usually this is used to manipulate the View model directly but it can be
     # used for very complex configuration strategy.
     attr_internal :block
+
+    attr_internal_reader :options
 
     attr_internal :action_params
 
@@ -41,19 +49,32 @@ module ActiveView
 
     # TODO: Remove in favour of an implicit action call
     def initialize_view(*args, &block)
+      run_block
+    end
+
+    def initialize_view!(*args, &block)
+      @_action_params = { args: args, block: block }
+      process(:initialize_view)
+    end
+
+    def populate!(*args, &block)
+      @_action_params = { args: args, block: block }
+      process(:populate)
+      set_assigns
     end
 
     private
 
-    def initialize_view!(*args, &block)
-      action_params = { args: args, block: block }
-      process(:initialize_view)
-    end
-
     ## adds blocks to the action calls.
     def process_action(method_name, *args)
-      args = args + action_params[:args]
-      super(method_name, *args, &action_params[:block])
+      args = args + @_action_params[:args]
+      if action_params[:block]
+        super(method_name, *args, &action_params[:block])
+      else
+        super(method_name, *args)
+      end
+    ensure
+      @_action_params = { args: [], block: nil }
     end
 
     def block_content
@@ -89,8 +110,15 @@ module ActiveView
       view.assign(variables)
     end
 
+    def default_action
+    end
+
+    def method_for_action(action_name)
+      super || "default_action"
+    end
+
     DEFAULT_PROTECTED_INSTANCE_VARIABLES = Set.new %w(
-      @_action_name @_response_body @_options
+      @_action_name @_response_body @_options @_action_params
       @_block_content @_view @_block @_valid @_submitted
     ).map(&:to_sym)
 
