@@ -9,7 +9,9 @@
     <% end %>
   <% end %>
 
-  <%= content_tag header_tag, title %>
+  <%= content_tag header_tag do %>
+    <%= show_link %>
+  <% end %>
 
   <div class="body">
     <p><%= body %></p>

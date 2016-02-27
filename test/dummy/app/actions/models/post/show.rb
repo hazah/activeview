@@ -14,7 +14,9 @@ class Post::Show < ActiveView::Base
   end
 
   def post_link(action, link_content, destination, options={})
-    return link_to_unless(current_page?(action), link_content, destination, options) {} unless action == :destroy
+    unless action == :destroy
+      return link_to_unless(current_page?(action), link_content, destination, options) { link_content if action == :show}
+    end
     link_to link_content, destination, options
   end
 
