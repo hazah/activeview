@@ -1,8 +1,9 @@
-<p id="notice"><%= notice %></p>
+<% if current_page?(:show) %>
+  <p id="notice"><%= notice %></p>
+<% end %>
 
 <%= div_for @post do %>
-
-  <% unless current_page?(:index) || params[:controller] != 'posts' %>
+  <% if current_page?(:show) %>
     <%= content_tag :div, class: 'back-link' do %>
       <%= index_link %>
     <% end %>

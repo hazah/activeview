@@ -13,7 +13,6 @@ module ActiveView
         end
       end
 
-
       def render(action=nil, options={}, &block) #:nodoc:
         unless action.nil?
           if action.is_a?(Class) && action < ActiveView::Base

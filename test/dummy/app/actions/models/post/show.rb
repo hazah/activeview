@@ -1,6 +1,6 @@
 class Post::Show < ActiveView::Base
   def header_tag
-    params[:controller] == 'posts' && params[:action] == 'show' ? :h1 : :h2
+    current_page?(:show) ? :h1 : :h2
   end
 
   def model_name
@@ -8,7 +8,9 @@ class Post::Show < ActiveView::Base
   end
 
   def current_page?(action)
-    super(controller: :posts, action: action)
+    options = { controller: 'posts', action: action }
+    options[:id] = @post.id unless @post.nil?
+    super(options)
   end
 
   def post_link(action, link_content, destination, options={})

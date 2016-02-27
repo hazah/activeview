@@ -122,8 +122,6 @@ class PostsController < ApplicationController
   def index
     @posts = Post.all
     @view = view(Post::Show)
-
-    @view.populate(@posts)
   end
 
   def show
@@ -198,8 +196,10 @@ Note that we render the `@view` or the `@form` instance variables.
 ```ruby
 
 ## views/posts/index.html.erb
-<%= render @view %>
-
+<% @posts.each do |post| %>
+  <% @view.populate(post) %>
+  <%= render @view %>
+<% end %>
 
 ## views/posts/show.html.erb
 <%= render @view %>
@@ -237,7 +237,7 @@ class Post::Show < ActiveView::Base
     # The implication is that this might be rendered from a different action/controller
     # combination.
 
-    params[:controller] == 'posts' && params[:action] == 'show' ? :h1 : :h2
+    current_page?(:show) ? :h1 : :h2
   end
 
   def model_name
@@ -246,12 +246,15 @@ class Post::Show < ActiveView::Base
 
   # helper overrides!
   def current_page?(action)
-    super(controller: :posts, action: action)
+    options = { controller: 'posts', action: action }
+    options[:id] = @post.id unless @post.nil?
+    super(options)
   end
 
   # wrapper helpers!
   def post_link(action, link_content, destination, options={})
-    link_to_unless(current_page?(action), content, destination, options) {}
+    return link_to_unless(current_page?(action), link_content, destination, options) {} unless action == :destroy
+    link_to link_content, destination, options
   end
 
   # and so on..
@@ -310,8 +313,8 @@ class Post::Presenter < ApplicationPresenter
     @post.assign_attributes params if params
 
     # set the attributes so that they can be used
-    title = @post.title
-    body = @post.body
+    self.title = @post.title
+    self.body = @post.body
   end
 
   def validate
@@ -332,10 +335,13 @@ And now, the moment of truth, the actual rendering of the views!
 
 ## actions/views/post/show.rb
 
-<%= div_for @post do %>
+<% if current_page?(:show) %>
+  <p id="notice"><%= notice %></p>
+<% end %>
 
-  <%= unless current_page?(:index) || params[:controller] != 'posts' %>
-    <%= content_tag :div, class: 'back-link' %>
+<%= div_for @post do %>
+  <% if current_page?(:show) %>
+    <%= content_tag :div, class: 'back-link' do %>
       <%= index_link %>
     <% end %>
   <% end %>
@@ -352,6 +358,8 @@ And now, the moment of truth, the actual rendering of the views!
   </ul>
 
 <% end %>
+
+<p><%= @block_content %></p>
 
 # actions/views/posts/form.html.erb
 
