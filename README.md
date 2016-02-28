@@ -121,7 +121,9 @@ class PostsController < ApplicationController
 
   def index
     @posts = Post.all
-    @view = view(Post::Show)
+    @view = view(Post::Index)
+
+    @view.populate(@posts, Post::Show)
   end
 
   def show
@@ -196,10 +198,8 @@ Note that we render the `@view` or the `@form` instance variables.
 ```ruby
 
 ## views/posts/index.html.erb
-<% @posts.each do |post| %>
-  <% @view.populate(post) %>
-  <%= render @view %>
-<% end %>
+<%= render @view %>
+
 
 ## views/posts/show.html.erb
 <%= render @view %>
@@ -226,32 +226,11 @@ of the request information as well as the command sequence that gets executed al
 with the data that is passed in to these commands.
 
 ```ruby
+## actions/models/concerns/post_view.rb
 
-## actions/models/show.rb
+module PostView
+  extend ActiveSupport::Concern
 
-class Post::Show < ActiveView::Base
-  ## Lets show off some features...
-
-  # helper methods
-  def header_tag
-    # The implication is that this might be rendered from a different action/controller
-    # combination.
-
-    current_page?(:show) ? :h1 : :h2
-  end
-
-  def model_name
-    Post.model_name.human
-  end
-
-  # helper overrides!
-  def current_page?(action)
-    options = { controller: 'posts', action: action }
-    options[:id] = @post.id unless @post.nil? || action == :index
-    super(options)
-  end
-
-  # wrapper helpers!
   def post_link(action, link_content, destination, options={})
     unless action == :destroy
       return link_to_unless(current_page?(action), link_content, destination, options) { link_content if action == :show}
@@ -259,17 +238,47 @@ class Post::Show < ActiveView::Base
     link_to link_content, destination, options
   end
 
-  # and so on..
+  def model_name
+    Post.model_name.human
+  end
+
+  def current_page?(action)
+    options = { controller: 'posts', action: action }
+    options[:id] = @post.id unless @post.nil? || action == :index
+    super(options)
+  end
+end
+
+
+# actions/models/post/index.rb
+
+class Post::Index < ActiveView::Collection
+  include PostView
+
+  def new_link
+    post_link :new, t(:create, model: model_name), new_post_path
+  end
+end
+
+
+## actions/models/show.rb
+
+class Post::Show < ActiveView::Base
+  include PostView
+
+  def header_tag
+    # The implication is that this might be rendered from a different action/controller
+    # combination.
+
+    current_page?(:show) ? :h1 : :h2
+  end
+
   def index_link
     post_link :index, model_name, Post
   end
 
   def show_link
     post_link :show, title, @post
-  end
-
-  def new_link
-    post_link :new, t(:create, model: model_name.singularize), @post
   end
 
   def edit_link
@@ -281,6 +290,7 @@ class Post::Show < ActiveView::Base
   end
 
 end
+
 
 # actions/models/post/form.rb
 
@@ -334,6 +344,22 @@ end
 And now, the moment of truth, the actual rendering of the views!
 
 ```ruby
+
+## actions/views/post/index.rb
+
+<% if current_page?(:index) %>
+  <p id="notice"><%= notice %></p>
+<% end %>
+
+<%= new_link %>
+
+<% if current_page?(:index) %>
+  <%= content_tag :h1, t(:listing, model: model_name.pluralize) %>
+<% end %>
+
+<% collection.each do |post| %>
+  <%= render post %>
+<% end %>
 
 ## actions/views/post/show.rb
 
