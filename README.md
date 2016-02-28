@@ -397,7 +397,7 @@ And now, the moment of truth, the actual rendering of the views!
 
       <ul>
        <%= @post.errors.full_messages.each do |message| %>
-        <li><%%= message %></li>
+        <li><%= message %></li>
        <% end %>
       </ul>
     </div>
