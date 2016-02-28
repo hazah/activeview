@@ -387,8 +387,6 @@ And now, the moment of truth, the actual rendering of the views!
 
 <% end %>
 
-<p><%= @block_content %></p>
-
 # actions/views/posts/form.html.erb
 
 <%= form_for @post do |form| %>
