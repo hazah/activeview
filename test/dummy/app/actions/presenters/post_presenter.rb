@@ -1,16 +1,19 @@
 class PostPresenter < ActiveView::Presenter
-  #before_action :initialize_view, :set_extra_var
-
   attr_accessor :title, :body
   helper_attr :title, :body
 
   def populate(post, params = nil)
-    @post = post
+    if post.is_a? ActiveRecord::Base
+      @post = post
 
-    @post.assign_attributes params if params
+      @post.assign_attributes params if params
 
-    self.title = @post.title
-    self.body = @post.body
+      self.title = @post.title
+      self.body = @post.body
+    else
+      @view = post
+      @posts = params
+    end
   end
 
   def validate
@@ -19,11 +22,5 @@ class PostPresenter < ActiveView::Presenter
 
   def submit
     @post.save
-  end
-
-  private
-
-  def set_extra_var
-    @extra_var = "Extra variable."
   end
 end

@@ -5,6 +5,9 @@ class PostsController < ApplicationController
   def index
     @posts = Post.all
     @view = view(Post::Show)
+    @index_view = view(Post::Index)
+
+    @index_view.populate(@view, @posts)
   end
 
   # GET /posts/1

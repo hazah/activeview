@@ -1,0 +1,13 @@
+<% if current_page?(:index) %>
+  <p id="notice"><%= notice %></p>
+<% end %>
+
+<%= new_link %>
+
+<% if current_page?(:index) %>
+  <%= content_tag :h1, t(:listing, model: model_name.pluralize) %>
+<% end %>
+
+<% posts do |post| %>
+  <%= render post %>
+<% end %>

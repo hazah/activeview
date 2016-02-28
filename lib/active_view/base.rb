@@ -50,6 +50,8 @@ module ActiveView
 
     end
 
+    include Layouts
+
     # Delegates to the class' #view_path
     def view_path
       self.class.view_path
@@ -70,6 +72,11 @@ module ActiveView
 
       assign_controller(controller)
       _prepare_context
+
+      if _include_layout? options
+        layout = _layout_for_option options.delete(:layout) { :default }
+        options[:layout] = layout
+      end
 
       @_parent = parent
       @_presenter = self.class.presenter.new(self, options, block)

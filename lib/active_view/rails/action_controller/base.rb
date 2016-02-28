@@ -17,7 +17,7 @@ module ActiveView
         unless action.nil?
           if action.is_a?(Class) && action < ActiveView::Base
             args = locals.delete(:args) || []
-            options[:view] = view(options, *args, &block)
+            options[:view] = view(action, *args, &block)
           end
         end
         super

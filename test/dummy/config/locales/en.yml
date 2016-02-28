@@ -21,3 +21,7 @@
 
 en:
   hello: "Hello world"
+  listing: Listing %{model}
+  create: Create %{model}
+  edit: Edit %{model}
+  destroy: Destroy %{model}

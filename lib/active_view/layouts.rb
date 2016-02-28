@@ -127,7 +127,7 @@ module ActiveView
       # ==== Returns
       # * <tt>String</tt> - A template name
       def _implied_layout_name # :nodoc:
-        view_path
+        self.view_path
       end
     end
 

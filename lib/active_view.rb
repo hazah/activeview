@@ -19,6 +19,7 @@ module ActiveView
     autoload :Base
     autoload :Rendering
     autoload :Form
+    autoload :Layouts
 
     autoload_under "renderer" do
       autoload :ViewRenderer
