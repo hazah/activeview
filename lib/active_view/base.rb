@@ -31,7 +31,7 @@ module ActiveView
         end
 
         # Determine the presenter class that will manipulate this view.
-        unless klass.instance_variable_defined?(:@_presenter) || klass == ActiveView::Form
+        unless klass.instance_variable_defined?(:@_presenter) || [ActiveView::Form, ActiveView::Collection].include?(klass)
           klass.instance_variable_set(:@_presenter, ("#{klass.view_path.camelize.deconstantize}Presenter".constantize))
         end
 

@@ -3,7 +3,7 @@ module ActiveView
     def render(context, options)
       @view    = context
       @details = extract_details(options)
-#raise options[:layout].call.inspect
+
       keys = options.has_key?(:locals) ? options[:locals].keys : []
 
       template = find_template(@view.view_path, options[:prefixes], false, keys, @details)

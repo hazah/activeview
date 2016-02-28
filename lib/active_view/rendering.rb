@@ -65,9 +65,9 @@ module ActiveView
     end
 
     def view(view_class, *args, &block)
-      view_class.view_context_class(controller.class).new(self, controller, *args, &block).tap do |view|
-        view.lookup_context.formats = [controller.format.to_sym]
-        view.lookup_context.rendered_format = view.lookup_context.formats.first
+      view_class.view_context_class(controller.class).new(self, controller, *args, &block).tap do |new_view|
+        new_view.lookup_context.formats = [lookup_context.rendered_format]
+        new_view.lookup_context.rendered_format = new_view.lookup_context.formats.first
       end
     end
 

@@ -8,6 +8,6 @@
   <%= content_tag :h1, t(:listing, model: model_name.pluralize) %>
 <% end %>
 
-<% posts do |post| %>
+<% collection.each do |post| %>
   <%= render post %>
 <% end %>

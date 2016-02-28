@@ -1,5 +1,5 @@
 class Post::Show < ActiveView::Base
-  include ::PostView
+  include PostView
 
   layout 'post'
 
