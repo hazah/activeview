@@ -1,17 +1,6 @@
-<% if current_page?(:show) %>
-  <p id="notice"><%= notice %></p>
-<% end %>
-
 <%= div_for @post do %>
-  <% if current_page?(:show) %>
-    <%= content_tag :div, class: 'back-link' do %>
-      <%= index_link %>
-    <% end %>
-  <% end %>
 
-  <%= content_tag header_tag do %>
-    <%= show_link %>
-  <% end %>
+  <%= header_tag %>
 
   <div class="body">
     <p><%= body %></p>
@@ -23,5 +12,3 @@
   </ul>
 
 <% end %>
-
-<p><%= @block_content %></p>

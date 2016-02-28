@@ -8,6 +8,14 @@ module PostView
     link_to link_content, destination, options
   end
 
+  def index_link
+    post_link :index, model_name.pluralize, Post
+  end
+
+  def show_link
+    post_link :show, @post.title, @post
+  end
+
   def model_name
     Post.model_name.human
   end

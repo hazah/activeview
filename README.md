@@ -197,20 +197,55 @@ Note that we render the `@view` or the `@form` instance variables.
 
 ```ruby
 
+## views/layouts/application.html.erb
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dummy</title>
+  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+  <%= csrf_meta_tags %>
+</head>
+<body>
+
+<p id="notice"><%= notice %></p>
+<%= yield %>
+
+</body>
+</html>
+
 ## views/posts/index.html.erb
+<%= @view.new_link %>
+<%= content_tag :h1, t(:listing, model: @view.model_name.pluralize) %>
 <%= render @view %>
 
 
 ## views/posts/show.html.erb
+<%= content_tag :div, @view.index_link, class: 'back-link' %>
+<%= content_tag :h1, @view.show_link %>
 <%= render @view %>
 
 
 ## views/posts/new.html.erb
+<%= content_tag :h1, t(:create, model: @form.model_name) %>
+
 <%= render @form %>
+
+<ul class="links">
+  <li><%= @form.index_link %></li>
+</ul>
 
 
 ## views/posts/edit.html.erb
+<%= content_tag :h1, t(:edit, model: @form.model_name) %>
+
 <%= render @form %>
+
+<ul class="links">
+  <li><%= @form.index_link %></li>
+  <li><%= @form.show_link %></li>
+</ul>
 
 ```
 
@@ -347,34 +382,15 @@ And now, the moment of truth, the actual rendering of the views!
 
 ## actions/views/post/index.rb
 
-<% if current_page?(:index) %>
-  <p id="notice"><%= notice %></p>
-<% end %>
-
-<%= new_link %>
-
-<% if current_page?(:index) %>
-  <%= content_tag :h1, t(:listing, model: model_name.pluralize) %>
-<% end %>
-
 <% collection.each do |post| %>
   <%= render post %>
 <% end %>
 
 ## actions/views/post/show.rb
 
-<% if current_page?(:show) %>
-  <p id="notice"><%= notice %></p>
-<% end %>
-
 <%= div_for @post do %>
-  <% if current_page?(:show) %>
-    <%= content_tag :div, class: 'back-link' do %>
-      <%= index_link %>
-    <% end %>
-  <% end %>
 
-  <%= content_tag header_tag, title %>
+  <%= header_tag %>
 
   <div class="body">
     <p><%= body %></p>
@@ -397,7 +413,7 @@ And now, the moment of truth, the actual rendering of the views!
 
       <ul>
        <%= @post.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
+        <li><%%= message %></li>
        <% end %>
       </ul>
     </div>
@@ -405,12 +421,12 @@ And now, the moment of truth, the actual rendering of the views!
 
   <div class="field">
     <%= form.label :title %>
-    <%= form.input :title %>
+    <%= form.text_field :title %>
   </div>
 
   <div class="field">
     <%= form.label :body %>
-    <%= form.input :body %>
+    <%= form.text_area :body %>
   </div>
 
   <div class="actions">

@@ -1,1 +1,8 @@
+<%= content_tag :h1, t(:edit, model: @form.model_name) %>
+
 <%= render @form %>
+
+<ul class="links">
+  <li><%= @form.index_link %></li>
+  <li><%= @form.show_link %></li>
+</ul>

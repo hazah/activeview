@@ -4,19 +4,15 @@ class Post::Show < ActiveView::Base
   layout 'post'
 
   def header_tag
-    current_page?(:show) ? :h1 : :h2
-  end
-
-  def index_link
-    post_link :index, model_name.pluralize, Post
-  end
-
-  def show_link
-    post_link :show, @post.title, @post
+    unless current_page?(:show)
+      content_tag :h2 do
+        show_link
+      end
+    end
   end
 
   def edit_link
-    post_link :edit, t(:edit, model: model_name), edit_post_path(@post)
+    post_link :edit, t(:edit, model: model_name), [:edit, @post]
   end
 
   def destroy_link
